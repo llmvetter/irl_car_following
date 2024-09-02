@@ -1,55 +1,73 @@
 import numpy as np
 
-class State():
-    def __init__(self, state):
-        self.state = self.validate(state)
-        self.bins = {
-            'x_bins': [-np.inf, -0.15, -0.05, -0.01, 0.01, 0.05, 0.15, np.inf],
-            'y_bins' : [-np.inf, 0.1, 0.3, 0.6, 1.0, 1.3, np.inf],
-            'x_vel_bins' : [-np.inf, -0.3, -0.1, -0.01, 0.01, 0.1, 0.3, np.inf],
-            'y_vel_bins' : [-np.inf, -0.8, -0.6, -0.4, -0.2, 0, np.inf],
-            'angle_bins' : [-np.inf, -0.3, -0.1, -0.01, 0.01, 0.1, 0.3, np.inf],
-            'ang_vel_bins' : [-np.inf, -0.3, -0.1, -0.01, 0.01, 0.1, 0.3, np.inf]
+class State:
+    def __init__(self, state:tuple):
+        self.state = state
+        self.space = {
+            'speed': [x/2 for x in range(1, 40, 1)],
+            'distance_gap': [x/2 for x in range(1, 80, 1)],
         }
+        self.coord = self.state_to_index()
         self.state_clipped = self.clip_state()
-        self.index = self.state_to_index(self.state_clipped)
+        self.index = self.flatten_index()
 
-    def validate(self, feature):
-        if isinstance(feature, np.ndarray):
-            return feature
-        else:
-            raise ValueError('not numpy array')
-
-    def clip_state(self):
-        x, y, x_vel, y_vel, angle, ang_vel, left_leg, right_leg = self.state
+    def clip_state(self) -> np.array:
+        s_index, d_index = self.coord
         discretized_state = [
-            np.digitize(x, self.bins['x_bins']) - 1,
-            np.digitize(y, self.bins['y_bins']) - 1,
-            np.digitize(x_vel, self.bins['x_vel_bins']) - 1,
-            np.digitize(y_vel, self.bins['y_vel_bins']) - 1,
-            np.digitize(angle, self.bins['angle_bins']) - 1,
-            np.digitize(ang_vel, self.bins['ang_vel_bins']) - 1,
-            int(left_leg),
-            int(right_leg)
+           self.space['speed'][s_index], 
+           self.space['distance_gap'][d_index],
         ]
-    
         return np.array(discretized_state)
     
-    @staticmethod
-    def state_to_index(state):
-        x, y, x_vel, y_vel, angle, ang_vel, left_leg, right_leg = state
-        return (
-            x * 6 * 7 * 6 * 7 * 7 * 2 * 2 +
-            y * 7 * 6 * 7 * 7 * 2 * 2 +
-            x_vel * 6 * 7 * 7 * 2 * 2 +
-            y_vel * 7 * 7 * 2 * 2 +
-            angle * 7 * 2 * 2 +
-            ang_vel * 2 * 2 +
-            left_leg * 2 +
-            right_leg
-        )
+    def state_to_index(self) -> tuple:
+        speed, acceleration = self.state
+        speed_index = np.digitize(speed, self.space['speed'], right=False)
+        distance_gap_index = np.digitize(acceleration, self.space['distance_gap'], right=False)
+        return (speed_index, distance_gap_index)
+    
+    def flatten_index(self) -> int:
+        s_index, d_index = self.coord
+        try:
+            flattened_index = s_index * len(self.space['distance_gap']) + d_index
+            return int(flattened_index)
+        except ValueError:
+            return ('State index out of bounds')
+            
 
-class StateActionPair(State):
-    def __init__(self, state, action):
-        super().__init__(state)
-        self.action = self.validate(action)
+class Action():
+    def __init__(self, action:float):
+        self.action = action #TODO add normalization step
+        self.space = {
+            'acceleration' : [x/20 for x in range(-8, 8, 1)]
+        }
+        self.action_clipped = self.clip_action()
+        self.index = self.action_to_index()
+
+    def clip_action(self):
+        a_index = np.digitize(self.action, self.space['acceleration'])
+        discretized_action = self.space['acceleration'][a_index]
+        return np.array(discretized_action)
+    
+    def action_to_index(self):
+        try:
+            a_index = np.digitize(self.action, self.space['acceleration'])
+            return np.array(a_index)
+        except ValueError:
+            return ('Action outside of discrete actionspace.')
+
+class StateActionPair:
+    def __init__(self, state: tuple, action: float):
+        self.state = State(state)
+        self.action = Action(action)
+
+    def get_state(self):
+        return self.state.state_clipped
+
+    def get_action(self):
+        return self.action.action_clipped
+
+    def get_state_index(self):
+        return self.state.index
+
+    def get_action_index(self):
+        return self.action.index
