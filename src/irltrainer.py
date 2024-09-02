@@ -1,8 +1,8 @@
 import torch
 
-from lunar_lander.src.agent.dqn import DQNAgent
+from lunar_lander.src.agent.dqn import DQNAgent #TODO exchange for value iteration
 from lunar_lander.src.models.trajectories import Trajectories
-from lunar_lander.src.ml_models.reward import RewardNetwork
+from lunar_lander.src.ml_models.reward import RewardNetwork #TODO exchange for gauss kernel
 from lunar_lander.src.utils import (
     policy_state_visitation_frequency,
     expert_state_visitation_frequency,

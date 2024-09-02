@@ -3,6 +3,7 @@ from car_following.src.models.state_action import StateActionPair
 class Trajectory:
     def __init__(self, speed, distance, acceleration):
         if not (len(speed) == len(distance) == len(acceleration)):
+            print(len(speed), len(distance), len(acceleration))
             raise ValueError("Speed, distance, and acceleration must have the same length")
 
         self.trajectory = []

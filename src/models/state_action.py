@@ -38,7 +38,7 @@ class Action():
     def __init__(self, action:float):
         self.action = action #TODO add normalization step
         self.space = {
-            'acceleration' : [x/20 for x in range(-8, 8, 1)]
+            'acceleration' : [x/20 for x in range(-10, 11, 1)]
         }
         self.action_clipped = self.clip_action()
         self.index = self.action_to_index()

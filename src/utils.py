@@ -5,17 +5,13 @@ from lunar_lander.src.models.state_action import State
 
 
 def expert_state_visitation_frequency(trajectories):
-    state_dims = 393216
-    n_states = np.prod(state_dims)
-    svf_vector = np.zeros(n_states)
-    # svf_matrix = []
+    svf_vector = np.zeros(3081)
     for trajectory in trajectories.trajectories:
         trajectory_visitation = []
-        for state_visited in trajectory.trajectory:
-            state_index = state_visited.index
+        for state_action_pair in trajectory.trajectory:
+            state_index = state_action_pair.state.index
             svf_vector[state_index] += 1.0
             trajectory_visitation.append(state_index)
-        # svf_matrix.append(trajectory_visitation)
     
     total_visits = np.sum(svf_vector)
     if total_visits > 0:
