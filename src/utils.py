@@ -1,46 +1,32 @@
 import numpy as np
-import torch
 
-from lunar_lander.src.models.state_action import State
+from lunar_lander.src.models.trajectories import Trajectories
 
 
-def expert_state_visitation_frequency(trajectories):
-    svf_vector = np.zeros(3081)
-    for trajectory in trajectories.trajectories:
-        trajectory_visitation = []
-        for state_action_pair in trajectory.trajectory:
-            state_index = state_action_pair.state.index
-            svf_vector[state_index] += 1.0
-            trajectory_visitation.append(state_index)
-    
-    total_visits = np.sum(svf_vector)
-    if total_visits > 0:
-        normalized_svf_vector = svf_vector / total_visits
-    else:
-        raise Exception("svf is 0")
-    
-    return normalized_svf_vector
+def feature_expectation_from_trajectories(
+        trajectories: Trajectories
+) -> np.ndarray:
+    fe = np.zeros(3081)
+    for trajectory in trajectories:
+        for state_action_pair in trajectory:
+            idx = state_action_pair.state.index
+            fe[idx] += 1
+    return fe/len(trajectories.trajectories)
+
 
 def policy_state_visitation_frequency(
-        policy_network,
-        env,
+        policy,
         num_trajectories=1000,
         max_steps=1000,
 ):
-    
-    svf = np.zeros(393216)
+    pass
 
-    for _ in range(num_trajectories):
-        state = State(state=env.reset()[0])
-        for _ in range(max_steps):
-            svf[state.index] += 1
-            with torch.no_grad():
-                state_tensor = torch.FloatTensor(state.state).unsqueeze(0)
-                action = policy_network.get_action(state_tensor)
-            state, _, done, _, _  = env.step(action)
-            state = State(state)
-            if done:
-                break
-
-    svf = svf / svf.sum()
-    return svf
+def index_to_state(flattened_index: int) -> tuple:
+        speed = [x/2 for x in range(1, 40, 1)]
+        distance = [x/2 for x in range(1, 80, 1)]
+        n_distance = len(distance)
+        speed_index = flattened_index // n_distance
+        distance_gap_index = flattened_index % n_distance
+        speed_value = speed[speed_index]
+        distance_gap_value = distance[distance_gap_index]
+        return (speed_value, distance_gap_value)
