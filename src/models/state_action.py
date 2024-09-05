@@ -5,7 +5,7 @@ class State:
         self.state = state
         self.space = {
             'speed': [x/2 for x in range(1, 40, 1)],
-            'distance_gap': [x/2 for x in range(1, 80, 1)],
+            'distance': [x/2 for x in range(1, 80, 1)],
         }
         self.coord = self.state_to_index()
         self.state_clipped = self.clip_state()
@@ -15,20 +15,20 @@ class State:
         s_index, d_index = self.coord
         discretized_state = [
            self.space['speed'][s_index], 
-           self.space['distance_gap'][d_index],
+           self.space['distance'][d_index],
         ]
         return np.array(discretized_state)
     
     def state_to_index(self) -> tuple:
         speed, acceleration = self.state
         speed_index = np.digitize(speed, self.space['speed'], right=False)
-        distance_gap_index = np.digitize(acceleration, self.space['distance_gap'], right=False)
+        distance_gap_index = np.digitize(acceleration, self.space['distance'], right=False)
         return (speed_index, distance_gap_index)
     
     def flatten_index(self) -> int:
         s_index, d_index = self.coord
         try:
-            flattened_index = s_index * len(self.space['distance_gap']) + d_index
+            flattened_index = s_index * len(self.space['distance']) + d_index
             return int(flattened_index)
         except ValueError:
             return ('State index out of bounds')

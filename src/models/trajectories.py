@@ -6,3 +6,11 @@ class Trajectories():
         self.trajectories = []
         for trajectory in trajectories:
             self.trajectories.append(trajectory)
+    
+    def __add__(self, other):
+        if not isinstance(other, Trajectories):
+            raise ValueError('Can only add another Trajectories object')
+        return Trajectories(self.trajectories + other.trajectories)
+
+    def __iter__(self):
+        return iter(self.trajectories)
