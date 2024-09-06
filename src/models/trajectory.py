@@ -1,7 +1,13 @@
-from car_following.src.models.state_action import StateActionPair
+from car_following.src.models.mdp import StateActionPair, CarFollowingMDP
 
 class Trajectory:
-    def __init__(self, speed, distance, acceleration):
+    def __init__(
+            self, 
+            speed: float,
+            distance: float,
+            acceleration: float,
+            mdp: CarFollowingMDP,
+    ) -> None:
         if not (len(speed) == len(distance) == len(acceleration)):
             print(len(speed), len(distance), len(acceleration))
             raise ValueError("Speed, distance, and acceleration must have the same length")
@@ -10,7 +16,8 @@ class Trajectory:
         for s, d, a in zip(speed, distance, acceleration):
             pair = StateActionPair(
                 state=(s, d),
-                action=a
+                action=a,
+                mdp=mdp,
             )
             self.trajectory.append(pair)
 

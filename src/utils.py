@@ -2,7 +2,7 @@ import numpy as np
 import seaborn as sns
 import matplotlib.pyplot as plt
 
-from car_following.src.models.state_action import State
+from car_following.src.models.mdp import CarFollowingMDP
 from lunar_lander.src.models.trajectories import Trajectories
 
 
@@ -18,21 +18,8 @@ def feature_expectation_from_trajectories(
 
 
 def policy_state_visitation_frequency(
-        policy,
-        num_trajectories=1000,
-        max_steps=1000,
 ):
     pass
-
-def index_to_state(flattened_index: int) -> tuple:
-        speed = [x/2 for x in range(1, 40, 1)]
-        distance = [x/2 for x in range(1, 80, 1)]
-        n_distance = len(distance)
-        speed_index = flattened_index // n_distance
-        distance_gap_index = flattened_index % n_distance
-        speed_value = speed[speed_index]
-        distance_gap_value = distance[distance_gap_index]
-        return (speed_value, distance_gap_value)
 
 def initial_probabilities_from_trajectories(
         trajectories: Trajectories,
@@ -46,25 +33,23 @@ def initial_probabilities_from_trajectories(
 
 def plot_heatmap(
         trajectories: Trajectories,
+        mdp: CarFollowingMDP,
         dropout: int = 1000,
 ) -> None:
-    dummy_state = State((0,0))
-    speed_space = dummy_state.space['speed']
-    distance_space = dummy_state.space['distance']
-    heatmap = np.zeros((len(speed_space), len(distance_space)))
+    heatmap = np.zeros((len(mdp.v_space), len(mdp.g_space)))
     visitation_vector = feature_expectation_from_trajectories(trajectories=trajectories)
-    for flattened_index, frequency in enumerate(visitation_vector):
+    for index, frequency in enumerate(visitation_vector):
         if frequency < dropout:
-            speed_value, distance_gap_value = index_to_state(flattened_index)
-            speed_index = np.digitize(speed_value, speed_space, right=False) - 1
-            distance_gap_index = np.digitize(distance_gap_value, distance_space, right=False) - 1
+            speed, distance = mdp._index_to_state(index)
+            speed_index = np.digitize(speed, mdp.v_space, right=False)-1
+            distance_gap_index = np.digitize(distance, mdp.g_space, right=False)-1
             
             # Increment the corresponding cell in the heatmap
             heatmap[speed_index, distance_gap_index] += frequency
 
     # Plot the heatmap using seaborn
     plt.figure(figsize=(10, 8))
-    sns.heatmap(heatmap, xticklabels=distance_space, yticklabels=speed_space, cmap='viridis', cbar=True)
+    sns.heatmap(heatmap, xticklabels=mdp.g_space, yticklabels=mdp.v_space, cmap='viridis', cbar=True)
     plt.xlabel('Distance Gap')
     plt.ylabel('Speed')
     plt.title('State Visitations Heatmap')
