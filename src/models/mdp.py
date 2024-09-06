@@ -7,9 +7,9 @@ class CarFollowingMDP:
             g_max: int = 40,
             v_steps = 0.5,
             g_steps = 0.5,
-            a_min: int = -3,
-            a_max: int = 3,
-            a_steps = 0.1,
+            a_min: int = -1,
+            a_max: int = 0.5,
+            a_steps = 0.05,
             delta_t: float = 0.1,
     ) -> None:
         self.v_max = v_max

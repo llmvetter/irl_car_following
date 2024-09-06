@@ -9,7 +9,7 @@ from lunar_lander.src.models.trajectories import Trajectories
 def feature_expectation_from_trajectories(
         trajectories: Trajectories,
 ) -> np.ndarray:
-    fe = np.zeros(3081)
+    fe = np.zeros(3200)
     for trajectory in trajectories:
         for state_action_pair in trajectory:
             idx = state_action_pair.state.index
@@ -24,7 +24,7 @@ def policy_state_visitation_frequency(
 def initial_probabilities_from_trajectories(
         trajectories: Trajectories,
 ) -> np.ndarray:
-    p = np.zeros(3081)
+    p = np.zeros(3200)
     for trajectory in trajectories:
         initial_state = trajectory.trajectory[0].state.index
         p[initial_state] += 1.0
