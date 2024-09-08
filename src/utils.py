@@ -53,13 +53,15 @@ def compute_expected_svf(
     for _ in range(2 * n_states):  # longest trajectory: n_states
         za = np.zeros((n_states, n_actions))  # za: action partition function
 
-        for s_from, a in product(range(n_states), range(n_actions)):
-            for s_to in range(n_states):
-                print(s_from/n_states)
+        for s_from in range(n_states):
+            for a in range(n_actions):
+                v, g = mdp._index_to_state(s_from)
+                v_next, g_next = mdp._transition(v, g, a)
+                s_to = mdp._state_to_index(v_next, g_next)
                 za[s_from, a] += mdp.get_transition_prob(
                     s=s_from,
                     s_next=s_to,
-                    a=a
+                    a=a,
                 ) * np.exp(reward.get_reward(mdp._index_to_state(s_from))) * zs[s_to]
 
         new_zs = za.sum(axis=1)
