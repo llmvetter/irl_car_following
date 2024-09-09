@@ -5,12 +5,12 @@ class CarFollowingMDP:
             self,
             v_max: int = 20,
             g_max: int = 40,
-            v_steps: float = 0.5,
-            g_steps: float = 0.5,
+            v_steps: float = 0.2,
+            g_steps: float = 0.2,
             a_min: int = -1,
-            a_max: int = 0.5,
-            a_steps = 0.05,
-            delta_t: float = 0.1,
+            a_max: int = 1.25,
+            a_steps = 0.25,
+            delta_t: float = 0.3,
     ) -> None:
         self.v_max = v_max
         self.g_max = g_max
@@ -42,20 +42,19 @@ class CarFollowingMDP:
     def _index_to_action(self, index):
         return self.action_space[index]
 
-    def _transition(self, v, g, a):
-        v_next = min(max(v + a * self.delta_t, 0), self.v_max)
-        g_next = min(max(g + 0.5 * a * self.delta_t**2, 0), self.g_max)
-        return (v_next, g_next)
+    def _transition(self, state_idx, a_idx):
+        v, g = self._index_to_state(state_idx)
+        a = self._index_to_action(a_idx)
+        v_next = min(v + a * self.delta_t, self.v_max)
+        g_next = min(g + 0.5 * a * self.delta_t**2, self.g_max)
+        s_next = self._state_to_index((v_next, g_next))
+        return s_next
 
     def _build_transition_matrix(self):
-        for s in range(self.n_states):
-            v, g = self._index_to_state(s)
-            for a_idx, a in enumerate(self.action_space):
-                s_next = self._state_to_index(self._transition(v, g, a))
-                self.T[(s, s_next, a_idx)] = 1.0
-
-    def get_transition_prob(self, s, s_next, a):
-        return self.T.get((s, s_next, a), 0.0)
+        for s_from in range(self.n_states):
+            for a in range(self.n_actions):
+                s_next = self._transition(s_from, a)
+                self.T[(s_from, a)] = s_next
 
 class State:
     def __init__(self, mdp, state):

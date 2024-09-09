@@ -1,7 +1,7 @@
 import numpy as np
-from itertools import product
 import seaborn as sns
 import matplotlib.pyplot as plt
+from scipy.special import logsumexp
 
 from car_following.src.models.mdp import CarFollowingMDP
 from lunar_lander.src.models.trajectories import Trajectories
@@ -10,8 +10,9 @@ from car_following.src.models.reward import LinearRewardFunction
 
 def feature_expectation_from_trajectories(
         trajectories: Trajectories,
+        mdp: ConnectionAbortedError,
 ) -> np.ndarray:
-    fe = np.zeros(3200)
+    fe = np.zeros(mdp.n_states)
     for trajectory in trajectories:
         for state_action_pair in trajectory:
             idx = state_action_pair.state.index
@@ -24,7 +25,7 @@ def policy_state_visitation_frequency(
 
 def initial_probabilities_from_trajectories(
         trajectories: Trajectories,
-        n_states: int = 3200,
+        n_states: int,
 ) -> np.ndarray:
     p = np.zeros(n_states)
     for trajectory in trajectories:
@@ -33,67 +34,40 @@ def initial_probabilities_from_trajectories(
 
     return p/len(trajectories.trajectories)
 
-def compute_expected_svf(
+def compute_action_probability(
         mdp: CarFollowingMDP,
         trajectories: Trajectories, 
         reward: LinearRewardFunction,
-        eps=1e-5
 ) -> np.ndarray:
     
     n_states = mdp.n_states
     n_actions = len(mdp.action_space)
     
-    # Initialize zs based on frequency of end states in trajectories
-    zs = initial_probabilities_from_trajectories(
+    # Compute rewards in log space
+    log_rewards = np.array([reward.get_reward(s) for s in range(n_states)])
+    
+    # Initialize log_zs based on frequency of end states in trajectories
+    log_zs = initial_probabilities_from_trajectories(
         trajectories=trajectories,
         n_states = n_states,
-    )
+    ) #thi should be end states not starting states
 
-    # Backward Pass
-    for _ in range(2 * n_states):  # longest trajectory: n_states
-        za = np.zeros((n_states, n_actions))  # za: action partition function
-
+    # Perform backward pass
+    for i in range(n_states):
+        print(f"Iteration: {i+1}/{n_states}")
+        log_za = np.full((n_states, n_actions), -np.inf)  # Initialize with log(0)
+        
         for s_from in range(n_states):
             for a in range(n_actions):
-                v, g = mdp._index_to_state(s_from)
-                v_next, g_next = mdp._transition(v, g, a)
-                s_to = mdp._state_to_index(v_next, g_next)
-                za[s_from, a] += mdp.get_transition_prob(
-                    s=s_from,
-                    s_next=s_to,
-                    a=a,
-                ) * np.exp(reward.get_reward(mdp._index_to_state(s_from))) * zs[s_to]
-
-        new_zs = za.sum(axis=1)
-
-        if np.max(np.abs(new_zs - zs)) < eps:
-            break
+                s_to = mdp.T[(s_from, a)]
+                log_za[s_from, a] = log_rewards[s_from] + log_zs[s_to]
         
-        zs = new_zs
-
-    # Compute local action probabilities
-    p_action = za / zs[:, None]
-
-    # Forward Pass
-    d = np.zeros(n_states)  # d: state-visitation frequencies
-
-    # Initialize with start states of all trajectories
-    for trajectory in trajectories:
-        d[trajectory[0]] += 1 / len(trajectories)
-
-    for t in range(2 * n_states):  # longest trajectory: n_states
-        new_d = np.zeros(n_states)
-        for s_to in range(n_states):
-            for s_from, a in product(range(n_states), range(n_actions)):
-                new_d[s_to] += d[s_from] * p_action[s_from, a] * mdp.get_transition_prob(s=s_from, s_next=s_to, a=a)
-        
-        # Check for convergence
-        if np.max(np.abs(new_d - d)) < eps:
-            break
-        
-        d = new_d
-
-    return d
+        log_zs = logsumexp(log_za, axis=1)
+    
+    log_p_action = log_za - logsumexp(log_za, axis=1)[:, None]
+    p_action = np.exp(log_p_action)
+    
+    return p_action
 
 def plot_heatmap(
         trajectories: Trajectories,
@@ -101,7 +75,7 @@ def plot_heatmap(
         dropout: int = 1000,
 ) -> None:
     heatmap = np.zeros((len(mdp.v_space), len(mdp.g_space)))
-    visitation_vector = feature_expectation_from_trajectories(trajectories=trajectories)
+    visitation_vector = feature_expectation_from_trajectories(mdp=mdp, trajectories=trajectories)
     for index, frequency in enumerate(visitation_vector):
         if frequency < dropout:
             speed, distance = mdp._index_to_state(index)
