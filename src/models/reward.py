@@ -7,12 +7,15 @@ class LinearRewardFunction:
             self, 
             mdp: CarFollowingMDP,
             num_features: int = 2,
-    ):  
+    ) -> None:  
         self.mdp = mdp
-        self.weights = self.weights = np.random.uniform(0, 1, num_features)
+        self.num_features = num_features
         self.std_features = np.array(np.std(self.mdp.v_space), np.std(self.mdp.g_space))
         self.mean_features = np.array(np.mean(self.mdp.v_space), np.mean(self.mdp.g_space))
+        self.weights = None
 
+    def set_weights(self, weights) -> None:
+        self.weights = weights
 
     def normalize_state_features(self, state: tuple) -> np.ndarray:
         return (np.array(state) - self.mean_features) / self.std_features
@@ -25,13 +28,3 @@ class LinearRewardFunction:
         state_nomalized = self.normalize_state_features(state)
         raw_reward = np.dot(self.weights, np.array(state_nomalized))
         return np.tanh(raw_reward)
-
-    def update_weights(self, gradient, learning_rate):
-        current_rewards = self.get_reward(np.arange(self.mdp.n_states))
-        tanh_derivative = 1 - np.tanh(current_rewards)**2
-        adjusted_gradient = gradient * tanh_derivative
-        self.weights += learning_rate * adjusted_gradient
-
-def compute_gradient(reward_function, mdp, expert_feature_expectations, learner_feature_expectations):
-    return expert_feature_expectations - learner_feature_expectations
-

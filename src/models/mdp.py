@@ -21,6 +21,7 @@ class CarFollowingMDP:
         self.n_actions = len(self.action_space)
         self.n_states = len(self.v_space)*len(self.g_space)
         self.delta_t = delta_t
+        self.state_space = self._create_statespace()
         self.T = {}
         self._build_transition_matrix()
 
@@ -35,6 +36,12 @@ class CarFollowingMDP:
         v_value = self.v_space[v_index]
         g_value = self.g_space[g_index]
         return (v_value, g_value)
+    
+    def _create_statespace(self):
+        F = np.zeros((self.n_states, 2))
+        for state_idx in range(self.n_states):
+            F[state_idx] = self._index_to_state(state_idx)
+        return F
 
     def _action_to_index(self, a):
         return np.digitize(a, self.action_space) - 1

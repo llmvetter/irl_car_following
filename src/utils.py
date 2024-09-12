@@ -46,7 +46,7 @@ def initial_probabilities_from_trajectories(
 
     return p/len(trajectories.trajectories)
 
-def compute_action_probability(
+def compute_expected_svf(
         mdp: CarFollowingMDP,
         trajectories: Trajectories, 
         reward: LinearRewardFunction,
@@ -78,7 +78,7 @@ def compute_action_probability(
     
     log_p_action = log_za - logsumexp(log_za, axis=1)[:, None]
     p_action = np.exp(log_p_action)
-    
+    print('backward pass complete')
     # return p_action
 
     p_transition = np.zeros((mdp.n_states, mdp.n_states, mdp.n_actions))
