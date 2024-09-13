@@ -3,6 +3,7 @@ import seaborn as sns
 import matplotlib.pyplot as plt
 from scipy.special import logsumexp
 from scipy import sparse
+from tqdm import tqdm
 
 from car_following.src.models.mdp import CarFollowingMDP
 from lunar_lander.src.models.trajectories import Trajectories
@@ -11,7 +12,7 @@ from car_following.src.models.reward import LinearRewardFunction
 
 def feature_expectation_from_trajectories(
         trajectories: Trajectories,
-        mdp: ConnectionAbortedError,
+        mdp: CarFollowingMDP,
 ) -> np.ndarray:
     fe = np.zeros(mdp.n_states)
     for trajectory in trajectories:
@@ -65,8 +66,8 @@ def compute_expected_svf(
     ) #thi should be end states not starting states
 
     # Perform backward pass
-    for i in range(n_states):
-        print(f"Iteration: {i+1}/{n_states}")
+    for i in tqdm(range(n_states)):
+    
         log_za = np.full((n_states, n_actions), -np.inf)  # Initialize with log(0)
         
         for s_from in range(n_states):
@@ -78,8 +79,6 @@ def compute_expected_svf(
     
     log_p_action = log_za - logsumexp(log_za, axis=1)[:, None]
     p_action = np.exp(log_p_action)
-    print('backward pass complete')
-    # return p_action
 
     p_transition = np.zeros((mdp.n_states, mdp.n_states, mdp.n_actions))
 
@@ -96,7 +95,7 @@ def compute_expected_svf(
     d = sparse.csr_matrix((n_states, n_states))
     d[:, 0] = p_initial
 
-    for t in range(1, 500):
+    for t in tqdm(range(1, 4000)):
         s_a_probs = d[:, t-1].multiply(p_action_sparse)
         s_a_probs_r = s_a_probs.reshape(1, -1)
         d[:, t] = s_a_probs_r.dot(p_transition_sparse).T
