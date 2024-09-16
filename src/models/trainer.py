@@ -1,9 +1,6 @@
 import numpy as np 
-from car_following.src.utils import (
-    feature_expectation_from_trajectories,
-    compute_expected_svf,
-)
-from car_following.src.models.trajectories import Trajectories
+from car_following.src.utils import compute_expected_svf
+from car_following.src.models.trajectory import Trajectories
 from car_following.src.models.reward import LinearRewardFunction 
 from car_following.src.models.mdp import CarFollowingMDP
 from car_following.src.models.optimizer import GradientDescentOptimizer

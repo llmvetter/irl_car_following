@@ -21,10 +21,6 @@ def feature_expectation_from_trajectories(
             fe[idx] += 1
     return fe/len(trajectories.trajectories)
 
-def policy_state_visitation_frequency(
-):
-    pass
-
 def terminal_probabilities_from_trajectories(
         trajectories: Trajectories,
         n_states: int,
@@ -102,6 +98,7 @@ def compute_expected_svf(
 
     state_frequencies = d.sum(axis=1).A1
     return state_frequencies
+
 
 def plot_heatmap(
         trajectories: Trajectories,
