@@ -43,6 +43,23 @@ def initial_probabilities_from_trajectories(
 
     return p/len(trajectories.trajectories)
 
+def local_action_probabilities(mdp, reward):
+    n_states = mdp.n_states
+    n_actions = mdp.n_actions
+    log_za = np.full((n_states, n_actions), -np.inf)
+    log_zs = np.zeros(n_states)
+
+    for _ in range(2 * n_states):
+        for s_from in range(n_states):
+            for a in range(n_actions):
+                transition_probs = mdp.T[s_from, :, a]
+                log_probs = np.log(transition_probs + 1e-300)
+                log_za[s_from, a] = reward[s_from] + logsumexp(log_zs + log_probs)
+        
+        log_zs = logsumexp(log_za, axis=1)
+    
+    return np.exp(log_za - log_zs[:, None])
+
 def compute_expected_svf(
         mdp: CarFollowingMDP,
         trajectories: Trajectories, 
@@ -59,15 +76,16 @@ def compute_expected_svf(
     log_zs = terminal_probabilities_from_trajectories(
         trajectories=trajectories,
         n_states = n_states,
-    ) #thi should be end states not starting states
+    )
 
     # Perform backward pass
-    for i in tqdm(range(n_states)):
+    for _ in tqdm(range(n_states)):
     
         log_za = np.full((n_states, n_actions), -np.inf)  # Initialize with log(0)
         
         for s_from in range(n_states):
             for a in range(n_actions):
+                transition_probs = mdp.T[s_from, :, a]
                 s_to = mdp.T[(s_from, a)]
                 log_za[s_from, a] = log_rewards[s_from] + log_zs[s_to]
         
