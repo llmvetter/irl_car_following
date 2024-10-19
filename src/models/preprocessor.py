@@ -13,7 +13,7 @@ class Preprocessor():
     def load(
             self,
             path: str,
-            hertz: int=3,
+            hertz: int=1, #TODO do not downsample
     ) -> Trajectories:
         df = pd.read_csv(path, sep='\t', header=None)
         df = df.iloc[::hertz]

@@ -3,6 +3,7 @@ import numpy as np
 class CarFollowingMDP:
     def __init__(
             self,
+            sigma_g: float = 0.4777,
             v_max: int = 20,
             g_max: int = 40,
             v_steps: float = 0.2,
@@ -10,10 +11,11 @@ class CarFollowingMDP:
             a_min: int = -1,
             a_max: int = 1.25,
             a_steps = 0.25,
-            delta_t: float = 0.3,
+            delta_t: float = 0.1, #TODO do not downsample
     ) -> None:
         self.v_max = v_max
         self.g_max = g_max
+        self.g_sigma = sigma_g
         self.v_space = np.arange(0, v_max, v_steps)
         self.g_space = np.arange(0, g_max, g_steps)
         self.action_space = np.arange(a_min, a_max, a_steps)
@@ -53,7 +55,7 @@ class CarFollowingMDP:
         v, g = self._index_to_state(state_idx)
         a = self._index_to_action(a_idx)
         v_next = min(v + a * self.delta_t, self.v_max)
-        g_next = min(g + 0.5 * a * self.delta_t**2, self.g_max)
+        g_next = min(g - v * self.delta_t + 0.5 * a * self.delta_t**2, self.g_max)
         s_next = self._state_to_index((v_next, g_next))
         return s_next
 
