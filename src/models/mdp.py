@@ -75,7 +75,10 @@ class CarFollowingMDP:
             return 0.0
         g_next = min(g_from - v_from * self.delta_t + 0.5 * action * self.delta_t**2, self.g_max)
         proba = self._gaussian_prob(g_to, g_next, self.g_sigma)
-        return proba
+        if proba > 1e-4:
+            return proba
+        else:
+            return 0
 
     def _build_transition_matrix(self):
         self.T = np.zeros((self.n_states, self.n_states, self.n_actions))
@@ -87,7 +90,9 @@ class CarFollowingMDP:
                 if total_prob > 0:
                     self.T[s_from, :, a] = [p / total_prob for p in probs]
                 else:
-                    self.T[s_from, s_from, a] = 1.0
+                    #TODO: This might yield blocked state as no transitions possible
+                    self.T[s_from, :, a] = np.zeros(self.n_states)
+               
 
 class State:
     def __init__(self, mdp, state):
