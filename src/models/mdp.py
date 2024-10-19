@@ -24,8 +24,6 @@ class CarFollowingMDP:
         self.n_states = len(self.v_space)*len(self.g_space)
         self.delta_t = delta_t
         self.state_space = self._create_statespace()
-        self.T = {}
-        self._build_transition_matrix()
 
     def _state_to_index(self, state: tuple):
         v, g = state
@@ -51,19 +49,45 @@ class CarFollowingMDP:
     def _index_to_action(self, index):
         return self.action_space[index]
 
-    def _transition(self, state_idx, a_idx):
-        v, g = self._index_to_state(state_idx)
-        a = self._index_to_action(a_idx)
-        v_next = min(v + a * self.delta_t, self.v_max)
-        g_next = min(g - v * self.delta_t + 0.5 * a * self.delta_t**2, self.g_max)
-        s_next = self._state_to_index((v_next, g_next))
-        return s_next
+    def _gaussian_prob(self, x, mean, sigma):
+        return np.exp(-((x - mean) ** 2) / (2 * sigma ** 2)) / (sigma * np.sqrt(2 * np.pi))
+    
+    def _transition_prob(self, s_idx_from, s_idx_to, a_idx):
+        """
+        Compute the transition probability for a single transition.
+
+        Args:
+            s_from: The state in which the transition originates.
+            s_to: The target-state of the transition.
+            a: The action via which the target state should be reached.
+
+        Returns:
+            The transition probability from `s_from` to `s_to` when taking
+            action `a`.
+        """
+        v_from, g_from = self._index_to_state(s_idx_from)
+        v_to, g_to = self._index_to_state(s_idx_to)
+        action = self._index_to_action(a_idx)
+        v_next = min(v_from + action * self.delta_t, self.v_max)
+
+        # Assure deterministic velocity transitions
+        if abs(v_to - v_next) > 1e-6:
+            return 0.0
+        g_next = min(g_from - v_from * self.delta_t + 0.5 * action * self.delta_t**2, self.g_max)
+        proba = self._gaussian_prob(g_to, g_next, self.g_sigma)
+        return proba
 
     def _build_transition_matrix(self):
+        self.T = np.zeros((self.n_states, self.n_states, self.n_actions))
         for s_from in range(self.n_states):
+            print(f"Calculating transitions from state {s_from}")
             for a in range(self.n_actions):
-                s_next = self._transition(s_from, a)
-                self.T[(s_from, a)] = s_next
+                probs = [self._transition_prob(s_from, s_to, a) for s_to in range(self.n_states)]
+                total_prob = sum(probs)
+                if total_prob > 0:
+                    self.T[s_from, :, a] = [p / total_prob for p in probs]
+                else:
+                    self.T[s_from, s_from, a] = 1.0
 
 class State:
     def __init__(self, mdp, state):
