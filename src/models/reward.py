@@ -27,4 +27,4 @@ class LinearRewardFunction:
         state = self.mdp._index_to_state(state)
         state_nomalized = self.normalize_state_features(state)
         raw_reward = np.dot(self.weights, np.array(state_nomalized))
-        return np.tanh(raw_reward)
+        return raw_reward

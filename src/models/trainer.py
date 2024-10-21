@@ -1,5 +1,10 @@
 import numpy as np 
-from car_following.src.utils import compute_expected_svf
+from car_following.src.utils import (
+    forward_pass,
+    backwar_pass,
+    feature_expectation_from_trajectories,
+    initial_probabilities_from_trajectories,
+)
 from car_following.src.models.trajectory import Trajectories
 from car_following.src.models.reward import LinearRewardFunction 
 from car_following.src.models.mdp import CarFollowingMDP
@@ -24,13 +29,16 @@ class Trainer:
     def train(
             self
     ) -> LinearRewardFunction:
-        from car_following.src.utils import feature_expectation_from_trajectories
 
         expert_svf = feature_expectation_from_trajectories(
             trajectories=self.trajectories,
             mdp=self.mdp,
         )
 
+        p_initial = initial_probabilities_from_trajectories(
+            trajectories=self.trajectories,
+            n_states=self.mdp.n_states,
+        )
         # init weights randomly
         omega = np.random.uniform(0, 1, self.reward_function.num_features)
         delta = np.inf
@@ -42,13 +50,18 @@ class Trainer:
             # Set the current weights in the reward function
             self.reward_function.set_weights(omega)
 
-            # compute gradient of the log-likelihood
-            expected_svf = compute_expected_svf(
+            p_action = backwar_pass(
                 mdp=self.mdp,
-                trajectories=self.trajectories,
-                reward=self.reward_function,
+                reward_func=LinearRewardFunction,
             )
 
+            expected_svf = forward_pass(
+                mdp = self.mdp,
+                p_initial = p_initial,
+                p_action = p_action,
+            )
+
+            #calculate featurexx^x expectation from svf
             grad = np.dot((expert_svf - expected_svf), self.mdp.state_space)
 
             # perform optimization step and compute delta for convergence
