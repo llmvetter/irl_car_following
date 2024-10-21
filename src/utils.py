@@ -4,9 +4,10 @@ import matplotlib.pyplot as plt
 from scipy.special import logsumexp
 from scipy import sparse
 from tqdm import tqdm
+from itertools import product
 
 from car_following.src.models.mdp import CarFollowingMDP
-from lunar_lander.src.models.trajectories import Trajectories
+from car_following.src.models.trajectory import Trajectories
 from car_following.src.models.reward import LinearRewardFunction
 
 
@@ -43,79 +44,107 @@ def initial_probabilities_from_trajectories(
 
     return p/len(trajectories.trajectories)
 
-def local_action_probabilities(mdp, reward):
-    n_states = mdp.n_states
-    n_actions = mdp.n_actions
-    log_za = np.full((n_states, n_actions), -np.inf)
-    log_zs = np.zeros(n_states)
-
-    for _ in range(2 * n_states):
-        for s_from in range(n_states):
-            for a in range(n_actions):
-                transition_probs = mdp.T[s_from, :, a]
-                log_probs = np.log(transition_probs + 1e-300)
-                log_za[s_from, a] = reward[s_from] + logsumexp(log_zs + log_probs)
-        
-        log_zs = logsumexp(log_za, axis=1)
-    
-    return np.exp(log_za - log_zs[:, None])
-
-def compute_expected_svf(
-        mdp: CarFollowingMDP,
-        trajectories: Trajectories, 
-        reward: LinearRewardFunction,
+def backward_pass(
+        mdp: CarFollowingMDP, 
+        reward_func: LinearRewardFunction,
 ) -> np.ndarray:
-    
     n_states = mdp.n_states
     n_actions = mdp.n_actions
     
-    # Compute rewards in log space
-    log_rewards = np.array([reward.get_reward(s) for s in range(n_states)])
+    # Precompute rewards
+    reward = np.array([reward_func.get_reward(s) for s in range(n_states)])
+
+    # Backward Pass
+    # init zs (state partition function)
+    zs = np.ones(n_states)
+
+    for _ in tqdm(range(100)): #2 * n_states
+        za = np.zeros((n_states, n_actions))
+        for s_from, a in product(range(n_states), range(n_actions)):
+            #sum state value for all possible next state given current state-action pair
+            za[s_from, a] = np.sum(mdp.T[s_from, :, a] * np.exp(reward[s_from]) * zs)
+        zs = np.sum(za, axis=1)
+        print(zs)
+    p_action = za / zs[:, None]
     
-    # Initialize log_zs based on frequency of end states in trajectories
-    log_zs = terminal_probabilities_from_trajectories(
-        trajectories=trajectories,
-        n_states = n_states,
-    )
+    return p_action
 
-    # Perform backward pass
-    for _ in tqdm(range(n_states)):
-    
-        log_za = np.full((n_states, n_actions), -np.inf)  # Initialize with log(0)
-        
-        for s_from in range(n_states):
-            for a in range(n_actions):
-                transition_probs = mdp.T[s_from, :, a]
-                s_to = mdp.T[(s_from, a)]
-                log_za[s_from, a] = log_rewards[s_from] + log_zs[s_to]
-        
-        log_zs = logsumexp(log_za, axis=1)
-    
-    log_p_action = log_za - logsumexp(log_za, axis=1)[:, None]
-    p_action = np.exp(log_p_action)
+def forward_pass(
+        mdp: CarFollowingMDP,
+        p_initial: np.ndarray,
+        p_action: np.ndarray,
+):
 
-    p_transition = np.zeros((mdp.n_states, mdp.n_states, mdp.n_actions))
+    n_states = mdp.n_states
+    n_actions = mdp.n_actions
 
-    for (s_from, a), s_to in mdp.T.items():
-        p_transition[s_from, s_to, a] = 1
-
-    p_initial = initial_probabilities_from_trajectories(
-        trajectories,
-        n_states,
-    )
-
-    p_transition_sparse = sparse.csr_matrix(p_transition.reshape(n_states * n_actions, n_states))
-    p_action_sparse = sparse.csr_matrix(p_action)
-    d = sparse.csr_matrix((n_states, n_states))
+    # init with starting probability
+    d = np.zeros((n_states, 2 * n_states))
     d[:, 0] = p_initial
+    
+    for t in range(1, 2 * n_states):
+        for s_to in range(n_states):
+            for s_from, a in product(range(n_states), range(n_actions)):
+                d[s_to, t] += d[s_from, t-1] * p_action[s_from, a] * mdp.T[s_from, s_to, a]
+    
+    return np.sum(d, axis=1)
 
-    for t in tqdm(range(1, 4000)):
-        s_a_probs = d[:, t-1].multiply(p_action_sparse)
-        s_a_probs_r = s_a_probs.reshape(1, -1)
-        d[:, t] = s_a_probs_r.dot(p_transition_sparse).T
+# def compute_expected_svf(
+#         mdp: CarFollowingMDP,
+#         trajectories: Trajectories, 
+#         reward: LinearRewardFunction,
+# ) -> np.ndarray:
+    
+#     n_states = mdp.n_states
+#     n_actions = mdp.n_actions
+    
+#     # Compute rewards in log space
+#     log_rewards = np.array([reward.get_reward(s) for s in range(n_states)])
+    
+#     # Initialize log_zs based on frequency of end states in trajectories
+#     log_zs = terminal_probabilities_from_trajectories(
+#         trajectories=trajectories,
+#         n_states = n_states,
+#     )
 
-    state_frequencies = d.sum(axis=1).A1
-    return state_frequencies
+#     # Perform backward pass
+#     for _ in tqdm(range(n_states)):
+    
+#         log_za = np.full((n_states, n_actions), -np.inf)  # Initialize with log(0)
+        
+#         for s_from in range(n_states):
+#             for a in range(n_actions):
+#                 transition_probs = mdp.T[s_from, :, a]
+#                 s_to = mdp.T[(s_from, a)]
+#                 log_za[s_from, a] = log_rewards[s_from] + log_zs[s_to]
+        
+#         log_zs = logsumexp(log_za, axis=1)
+    
+#     log_p_action = log_za - logsumexp(log_za, axis=1)[:, None]
+#     p_action = np.exp(log_p_action)
+
+#     p_transition = np.zeros((mdp.n_states, mdp.n_states, mdp.n_actions))
+
+#     for (s_from, a), s_to in mdp.T.items():
+#         p_transition[s_from, s_to, a] = 1
+
+#     p_initial = initial_probabilities_from_trajectories(
+#         trajectories,
+#         n_states,
+#     )
+
+#     p_transition_sparse = sparse.csr_matrix(p_transition.reshape(n_states * n_actions, n_states))
+#     p_action_sparse = sparse.csr_matrix(p_action)
+#     d = sparse.csr_matrix((n_states, n_states))
+#     d[:, 0] = p_initial
+
+#     for t in tqdm(range(1, 4000)):
+#         s_a_probs = d[:, t-1].multiply(p_action_sparse)
+#         s_a_probs_r = s_a_probs.reshape(1, -1)
+#         d[:, t] = s_a_probs_r.dot(p_transition_sparse).T
+
+#     state_frequencies = d.sum(axis=1).A1
+#     return state_frequencies
 
 
 def plot_heatmap(
