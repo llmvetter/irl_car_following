@@ -5,6 +5,7 @@ from scipy.special import logsumexp
 from scipy import sparse
 from tqdm import tqdm
 from itertools import product
+from scipy import sparse
 
 from car_following.src.models.mdp import CarFollowingMDP
 from car_following.src.models.trajectory import Trajectories
@@ -56,17 +57,15 @@ def backward_pass(
 
     # Backward Pass
     # init zs (state partition function)
-    zs = np.ones(n_states)
+    log_zs = np.zeros(n_states)
 
-    for _ in tqdm(range(100)): #2 * n_states
-        za = np.zeros((n_states, n_actions))
+    for _ in tqdm(range(50)): #2 * n_states
+        log_za = np.full((n_states, n_actions), -np.inf)
         for s_from, a in product(range(n_states), range(n_actions)):
             #sum state value for all possible next state given current state-action pair
-            za[s_from, a] = np.sum(mdp.T[s_from, :, a] * np.exp(reward[s_from]) * zs)
-        zs = np.sum(za, axis=1)
-        print(zs)
-    p_action = za / zs[:, None]
-    
+            log_za[s_from, a] = reward[s_from] + logsumexp(np.log(mdp.T[s_from, :, a] + 1e-300) + log_zs)
+        log_zs = logsumexp(log_za, axis=1)
+    p_action = np.exp(log_za - log_zs[:, None])
     return p_action
 
 def forward_pass(
@@ -88,6 +87,49 @@ def forward_pass(
                 d[s_to, t] += d[s_from, t-1] * p_action[s_from, a] * mdp.T[s_from, s_to, a]
     
     return np.sum(d, axis=1)
+
+from scipy import sparse
+
+def create_sparse_transition_matrix(mdp):
+    n_states = mdp.n_states
+    n_actions = mdp.n_actions
+    T_reshaped = mdp.T.reshape(n_states * n_actions, n_states)
+    T_sparse = sparse.csr_matrix(T_reshaped)
+    
+    return T_sparse
+
+def forward_pass_optimized(mdp, p_action, n_iterations=4000):
+
+    p_initial = np.ones(mdp.n_states) / mdp.n_states
+    T_sparse = create_sparse_transition_matrix(mdp)
+    p_action_sparse = sparse.csr_matrix(p_action)
+    
+    # Initialize d with p_initial
+    d = sparse.csr_matrix(p_initial).T
+    
+    # Small constant to prevent underflow
+    epsilon = 1e-10
+    
+    for t in tqdm(range(1, n_iterations)):
+        # Element-wise multiplication
+        s_a_probs = d.multiply(p_action_sparse)
+        s_a_probs_r = s_a_probs.reshape(1, -1)
+        d_next = s_a_probs_r.dot(T_sparse).T
+        
+        # Convert to dense, add epsilon, and normalize
+        d_dense = d_next.toarray() + epsilon
+        d_dense /= d_dense.sum() + epsilon
+        
+        # Convert back to sparse
+        d = sparse.csr_matrix(d_dense)
+        
+        # Break if d becomes all zeros
+        if d.nnz == 0:
+            print(f"Warning: d became all zeros at iteration {t}")
+            break
+    
+    state_frequencies = d.sum(axis=1).A1
+    return state_frequencies
 
 # def compute_expected_svf(
 #         mdp: CarFollowingMDP,
