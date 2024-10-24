@@ -1,4 +1,5 @@
 import pickle
+import numpy as np
 
 from car_following.src.models.trainer import Trainer
 from car_following.src.models.trajectory import Trajectories
@@ -15,10 +16,12 @@ mdp = CarFollowingMDP(
     v_steps=0.25,
     g_steps=0.25,
 )
-#init optimizer
-optimizer = GradientDescentOptimizer()
 #init reward function
 reward_function = LinearRewardFunction(mdp=mdp)
+
+omega = np.random.uniform(0, 1, reward_function.num_features)
+#init optimizer
+optimizer = GradientDescentOptimizer(omega=omega)
 
 #change directory for remote directory
 expert_trajectories = Trajectories([])
