@@ -1,9 +1,8 @@
 import numpy as np 
 from car_following.src.utils import (
     forward_pass,
-    backwar_pass,
-    feature_expectation_from_trajectories,
-    initial_probabilities_from_trajectories,
+    backward_pass,
+    svf_from_trajectories,
 )
 from car_following.src.models.trajectory import Trajectories
 from car_following.src.models.reward import LinearRewardFunction 
@@ -27,41 +26,32 @@ class Trainer:
         self.eps= eps
     
     def train(
-            self
-    ) -> LinearRewardFunction:
+            self,
+    ) -> np.ndarray:
 
-        expert_svf = feature_expectation_from_trajectories(
+        expert_svf = svf_from_trajectories(
             trajectories=self.trajectories,
             mdp=self.mdp,
         )
 
-        p_initial = initial_probabilities_from_trajectories(
-            trajectories=self.trajectories,
-            n_states=self.mdp.n_states,
-        )
-        # init weights randomly
-        omega = np.random.uniform(0, 1, self.reward_function.num_features)
         delta = np.inf
-        self.optimizer.reset(omega)
 
         while delta > self.eps:
-            omega_old = omega.copy()
+            #retain old omega value
+            omega_old = self.optimizer.omega.copy()
 
             # Set the current weights in the reward function
-            self.reward_function.set_weights(omega)
+            self.reward_function.set_weights(self.optimizer.omega)
 
-            p_action = backwar_pass(
+            p_action = backward_pass(
                 mdp=self.mdp,
-                reward_func=LinearRewardFunction,
+                reward_func=self.reward_function,
             )
-
             expected_svf = forward_pass(
-                mdp = self.mdp,
-                p_initial = p_initial,
-                p_action = p_action,
+                mdp=self.mdp,
+                p_action=p_action,
             )
-
-            #calculate featurexx^x expectation from svf
+            #calculate feature expectation from svf
             grad = np.dot((expert_svf - expected_svf), self.mdp.state_space)
 
             # perform optimization step and compute delta for convergence
@@ -73,4 +63,4 @@ class Trainer:
 
         # Set final weights and return the reward function
         self.reward_function.set_weights(omega)
-        return self.reward_function
+        return self.reward_function.weights

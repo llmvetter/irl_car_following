@@ -12,7 +12,7 @@ class LinearRewardFunction:
         self.num_features = num_features
         self.std_features = np.array(np.std(self.mdp.v_space), np.std(self.mdp.g_space))
         self.mean_features = np.array(np.mean(self.mdp.v_space), np.mean(self.mdp.g_space))
-        self.weights = None
+        self.weights: np.ndarray = None
 
     def set_weights(self, weights) -> None:
         self.weights = weights
