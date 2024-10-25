@@ -1,14 +1,12 @@
 import numpy as np
-import seaborn as sns
-import matplotlib.pyplot as plt
 from scipy.special import logsumexp
 from scipy import sparse
 from itertools import product
 from scipy import sparse
 
-from car_following.src.models.mdp import CarFollowingMDP
-from car_following.src.models.trajectory import Trajectories
-from car_following.src.models.reward import LinearRewardFunction
+from src.models.mdp import CarFollowingMDP
+from src.models.trajectory import Trajectories
+from src.models.reward import LinearRewardFunction
 
 
 def svf_from_trajectories(
@@ -58,7 +56,7 @@ def backward_pass(
     # init zs (state partition function)
     log_zs = np.zeros(n_states)
 
-    for _ in 2*n_states:
+    for _ in range(2*n_states):
         log_za = np.full((n_states, n_actions), -np.inf)
         for s_from, a in product(range(n_states), range(n_actions)):
             #sum state value for all possible next state given current state-action pair

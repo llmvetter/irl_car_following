@@ -1,13 +1,14 @@
 import numpy as np 
-from car_following.src.utils import (
+
+from src.utils import (
     forward_pass,
     backward_pass,
     svf_from_trajectories,
 )
-from car_following.src.models.trajectory import Trajectories
-from car_following.src.models.reward import LinearRewardFunction 
-from car_following.src.models.mdp import CarFollowingMDP
-from car_following.src.models.optimizer import GradientDescentOptimizer
+from src.models.trajectory import Trajectories
+from src.models.reward import LinearRewardFunction 
+from src.models.mdp import CarFollowingMDP
+from src.models.optimizer import GradientDescentOptimizer
 
 class Trainer:
     def __init__(

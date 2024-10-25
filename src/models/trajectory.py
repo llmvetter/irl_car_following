@@ -1,4 +1,4 @@
-from car_following.src.models.mdp import StateActionPair, CarFollowingMDP
+from src.models.mdp import StateActionPair, CarFollowingMDP
 
 class Trajectory:
     def __init__(

@@ -1,7 +1,7 @@
 import pandas as pd
 
-from car_following.src.models.trajectory import Trajectory, Trajectories
-from car_following.src.models.mdp import CarFollowingMDP
+from src.models.trajectory import Trajectory, Trajectories
+from src.models.mdp import CarFollowingMDP
 
 class Preprocessor():
     def __init__(

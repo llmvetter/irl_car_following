@@ -1,12 +1,12 @@
 import pickle
 import numpy as np
 
-from car_following.src.models.trainer import Trainer
-from car_following.src.models.trajectory import Trajectories
-from car_following.src.models.optimizer import GradientDescentOptimizer
-from car_following.src.models.reward import LinearRewardFunction
-from car_following.src.models.preprocessor import Preprocessor
-from car_following.src.models.mdp import CarFollowingMDP
+from src.models.trainer import Trainer
+from src.models.trajectory import Trajectories
+from src.models.optimizer import GradientDescentOptimizer
+from src.models.reward import LinearRewardFunction
+from src.models.preprocessor import Preprocessor
+from src.models.mdp import CarFollowingMDP
 
 #init mdp
 mdp = CarFollowingMDP(

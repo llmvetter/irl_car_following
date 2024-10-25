@@ -1,6 +1,6 @@
 import numpy as np
 
-from car_following.src.models.mdp import CarFollowingMDP
+from src.models.mdp import CarFollowingMDP
 
 class LinearRewardFunction:
     def __init__(
