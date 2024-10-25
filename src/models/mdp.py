@@ -1,4 +1,7 @@
+import logging
 import numpy as np
+logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
+
 
 class CarFollowingMDP:
     def __init__(
@@ -84,6 +87,7 @@ class CarFollowingMDP:
 
     def _build_transition_matrix(self):
         self.T = np.zeros((self.n_states, self.n_states, self.n_actions))
+        logging.info("Building transition matrix")
         for s_from in range(self.n_states):
             for a in range(self.n_actions):
                 probs = [self._transition_prob(s_from, s_to, a) for s_to in range(self.n_states)]
@@ -93,6 +97,7 @@ class CarFollowingMDP:
                 else:
                     #TODO: This might yield blocked state as no transitions possible
                     self.T[s_from, :, a] = np.zeros(self.n_states)
+            logging.info(f"Transition matrix loaded: {self.T[1000, 1000, 2]}")
 
 class State:
     def __init__(self, mdp, state):
