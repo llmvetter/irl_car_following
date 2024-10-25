@@ -26,7 +26,7 @@ optimizer = GradientDescentOptimizer(omega=omega)
 #change directory for remote directory
 expert_trajectories = Trajectories([])
 for i in range(1,6):
-    path = f'home/leve469a/data/TrajData_Punzo_Napoli/drivetest{i}.FCdata'
+    path = f"/home/h6/leve469a/data/TrajData_Punzo_Napoli/drivetest{i}.FCdata"
     trajs = Preprocessor(mdp=mdp).load(path=path)
     expert_trajectories += trajs
 
@@ -40,5 +40,5 @@ trainer = Trainer(
 
 extracted_reward = trainer.train()
 
-with open('home/leve469a/results/reward_function.pickle', 'wb') as file:
+with open('home/h6/leve469a/results/reward_function.pickle', 'wb') as file:
     pickle.dump(extracted_reward, file)
