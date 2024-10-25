@@ -98,6 +98,8 @@ class CarFollowingMDP:
                     #TODO: This might yield blocked state as no transitions possible
                     self.T[s_from, :, a] = np.zeros(self.n_states)
             logging.info(f"Transition matrix loaded: {s_from/self.n_states}")
+        logging.info(f"Transition matrix initialized. Random state:{self.mdp.T[1000,1000,2]}")
+        
 
 class State:
     def __init__(self, mdp, state):
