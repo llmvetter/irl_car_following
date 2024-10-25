@@ -1,7 +1,10 @@
 import logging
 import numpy as np
+import pickle
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
 
+with open('/home/h6/leve469a/data/transition_matrix.pkl', 'rb') as f:
+    transition_matrix = pickle.load(f)
 
 class CarFollowingMDP:
     def __init__(
@@ -27,7 +30,7 @@ class CarFollowingMDP:
         self.n_states = len(self.v_space)*len(self.g_space)
         self.delta_t = delta_t
         self.state_space = self._create_statespace()
-        self.T = self._build_transition_matrix()
+        self.T = transition_matrix
 
     def _state_to_index(self, state: tuple):
         v, g = state
@@ -98,7 +101,7 @@ class CarFollowingMDP:
                     #TODO: This might yield blocked state as no transitions possible
                     self.T[s_from, :, a] = np.zeros(self.n_states)
             logging.info(f"Transition matrix loaded: {s_from/self.n_states}")
-        logging.info(f"Transition matrix initialized. Random state:{self.mdp.T[1000,1000,2]}")
+        logging.info(f"Transition matrix initialized. Random state:{self.T[1000,1000,2]}")
         
 
 class State:
