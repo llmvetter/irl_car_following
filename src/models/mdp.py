@@ -1,5 +1,4 @@
 import numpy as np
-from tqdm import tqdm
 
 class CarFollowingMDP:
     def __init__(
@@ -25,6 +24,7 @@ class CarFollowingMDP:
         self.n_states = len(self.v_space)*len(self.g_space)
         self.delta_t = delta_t
         self.state_space = self._create_statespace()
+        self.T = self._build_transition_matrix()
 
     def _state_to_index(self, state: tuple):
         v, g = state
@@ -84,7 +84,7 @@ class CarFollowingMDP:
 
     def _build_transition_matrix(self):
         self.T = np.zeros((self.n_states, self.n_states, self.n_actions))
-        for s_from in tqdm(range(self.n_states)):
+        for s_from in range(self.n_states):
             for a in range(self.n_actions):
                 probs = [self._transition_prob(s_from, s_to, a) for s_to in range(self.n_states)]
                 total_prob = sum(probs)
