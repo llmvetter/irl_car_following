@@ -1,4 +1,5 @@
-import numpy as np 
+import numpy as np
+import logging
 
 from src.utils import (
     forward_pass,
@@ -9,6 +10,8 @@ from src.models.trajectory import Trajectories
 from src.models.reward import LinearRewardFunction 
 from src.models.mdp import CarFollowingMDP
 from src.models.optimizer import GradientDescentOptimizer
+
+logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
 
 class Trainer:
     def __init__(
@@ -44,10 +47,12 @@ class Trainer:
             # Set the current weights in the reward function
             self.reward_function.set_weights(self.optimizer.omega)
 
+            logging.info("Backwardpass")
             p_action = backward_pass(
                 mdp=self.mdp,
                 reward_func=self.reward_function,
             )
+            logging.info("Forward Pass")
             expected_svf = forward_pass(
                 mdp=self.mdp,
                 p_action=p_action,
@@ -60,7 +65,7 @@ class Trainer:
             
             # re-compute delta for convergence check
             delta = np.max(np.abs(omega_old - omega))
-            print(f'gradient computation complete: {delta}')
+            logging.info(f'gradient computation complete: {delta}')
 
         # Set final weights and return the reward function
         self.reward_function.set_weights(omega)
