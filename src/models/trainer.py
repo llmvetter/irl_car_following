@@ -48,14 +48,14 @@ class Trainer:
             self.reward_function.set_weights(self.optimizer.omega)
 
             logging.info("Backwardpass")
-            p_action = backward_pass(
+            policy = backward_pass(
                 mdp=self.mdp,
                 reward_func=self.reward_function,
             )
             logging.info("Forward Pass")
             expected_svf = forward_pass(
                 mdp=self.mdp,
-                p_action=p_action,
+                policy=policy,
             )
             #calculate feature expectation from svf
             grad = np.dot((expert_svf - expected_svf), self.mdp.state_space)

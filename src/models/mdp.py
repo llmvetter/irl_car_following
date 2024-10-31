@@ -1,10 +1,10 @@
 import logging
 import numpy as np
-import pickle
+from scipy.stats import norm
+
+
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
 
-with open('/home/h6/leve469a/data/transition_matrix.pkl', 'rb') as f:
-    transition_matrix = pickle.load(f)
 
 class CarFollowingMDP:
     def __init__(
@@ -30,7 +30,6 @@ class CarFollowingMDP:
         self.n_states = len(self.v_space)*len(self.g_space)
         self.delta_t = delta_t
         self.state_space = self._create_statespace()
-        self.T = transition_matrix
 
     def _state_to_index(self, state: tuple):
         v, g = state
@@ -59,50 +58,77 @@ class CarFollowingMDP:
     def _gaussian_prob(self, x, mean, sigma):
         return np.exp(-((x - mean) ** 2) / (2 * sigma ** 2)) / (sigma * np.sqrt(2 * np.pi))
     
-    def _transition_prob(self, s_idx_from, s_idx_to, a_idx):
+    def get_transitions(
+            self, 
+            s_idx_from: int,
+            a_idx: int,
+            proba_threshold: float = 0.001,
+    ) -> np.ndarray:
         """
-        Compute the transition probability for a single transition.
+        Compute the transition probabilities and next states for
+         a given state-action pair.
 
         Args:
-            s_from: The state in which the transition originates.
-            s_to: The target-state of the transition.
-            a: The action via which the target state should be reached.
+            s_from: The state index in which the transition originates.
+            a: The action index via which the target state should be reached.
 
         Returns:
-            The transition probability from `s_from` to `s_to` when taking
-            action `a`.
+            A 2d numpy array with the indices of next states and their tran-
+            sition probabilities.
         """
-        v_from, g_from = self._index_to_state(s_idx_from)
-        v_to, g_to = self._index_to_state(s_idx_to)
-        action = self._index_to_action(a_idx)
-        v_next = min(v_from + action * self.delta_t, self.v_max)
-
-        # Assure deterministic velocity transitions
-        if abs(v_to - v_next) > 1e-6:
-            return 0.0
-        g_next = min(g_from - v_from * self.delta_t + 0.5 * action * self.delta_t**2, self.g_max)
-        proba = self._gaussian_prob(g_to, g_next, self.g_sigma)
-        #cap probability
-        if proba > 1e-4:
-            return proba
-        else:
-            return 0
-
-    def _build_transition_matrix(self):
-        self.T = np.zeros((self.n_states, self.n_states, self.n_actions))
-        logging.info("Building transition matrix")
-        for s_from in range(self.n_states):
-            for a in range(self.n_actions):
-                probs = [self._transition_prob(s_from, s_to, a) for s_to in range(self.n_states)]
-                total_prob = sum(probs)
-                if total_prob > 0:
-                    self.T[s_from, :, a] = [p / total_prob for p in probs]
-                else:
-                    #TODO: This might yield blocked state as no transitions possible
-                    self.T[s_from, :, a] = np.zeros(self.n_states)
-            logging.info(f"Transition matrix loaded: {s_from/self.n_states}")
-        logging.info(f"Transition matrix initialized. Random state:{self.T[1000,1000,2]}")
         
+        v_from, g_from = self._index_to_state(s_idx_from)
+        action = self._index_to_action(a_idx)
+        v_next = max(min(v_from + action * self.delta_t, self.v_max), 0)
+
+        if v_next != 0:
+            g_next_mean = g_from-(v_from*self.delta_t)+(0.5*action*self.delta_t**2)
+        else:
+            g_next_mean = g_from
+
+        # discard very unlikely transitions
+        lower_bound = max(0, g_next_mean - 3*self.g_sigma)
+        upper_bound = min(self.g_max, g_next_mean + 3*self.g_sigma)
+
+        significant_bins = []
+        probabilities = []
+
+        for i in range(len(self.g_space) - 1):
+            bin_start = self.g_space[i]
+            bin_end = self.g_space[i + 1]
+
+            if bin_start > upper_bound or bin_end < lower_bound:
+                continue
+            
+            prob = norm.cdf(
+                bin_end, g_next_mean, self.g_sigma
+                )-norm.cdf(bin_start, g_next_mean, self.g_sigma)
+            
+            if prob > proba_threshold:
+                probabilities.append(prob)
+                significant_bins.append((v_next, (bin_start + bin_end) / 2))
+                
+        # normalize
+        probabilities = np.array(probabilities)
+        probabilities /= np.sum(probabilities)
+
+        next_state_indices = [self._state_to_index(state) for state in significant_bins]
+
+        # Combine probabilities for duplicate indices
+        unique_indices, unique_probs = np.unique(next_state_indices, return_inverse=True)
+        combined_probs = np.bincount(unique_probs, weights=probabilities)
+
+        return np.column_stack((unique_indices, combined_probs))
+
+    def step(self, state, action):
+        transitions = self.get_transitions(state, action)
+        next_states = transitions[:, 0].astype(int)
+        probabilities = transitions[:, 1]
+        if next_states.size == 0: #TODO: Handle thi scenerio as a crash?
+            return state
+        next_state = np.random.choice(next_states, p=probabilities)
+        
+        return next_state
 
 class State:
     def __init__(self, mdp, state):
