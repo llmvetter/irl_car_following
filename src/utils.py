@@ -1,6 +1,5 @@
 import numpy as np
 import logging
-from tqdm import tqdm
 
 from src.models.mdp import CarFollowingMDP
 from src.models.trajectory import Trajectories
@@ -55,7 +54,7 @@ def backward_pass(
     V = np.random.uniform(low=0.0, high=0.1, size=mdp.n_states)
     for _ in range(max_iterations):
         delta = 0
-        for s in tqdm(range(mdp.n_states)):
+        for s in range(mdp.n_states):
             v = V[s]
             Q_sa = np.zeros(mdp.n_actions)
             for a in range(mdp.n_actions):
@@ -68,7 +67,7 @@ def backward_pass(
     
     # Compute the policy
     policy = np.zeros((mdp.n_states, mdp.n_actions))
-    for s in tqdm(range(mdp.n_states)):
+    for s in range(mdp.n_states):
         Q_sa = np.zeros(mdp.n_actions)
         for a in range(mdp.n_actions):
             for next_s, prob in mdp.get_transitions(s, a):
@@ -86,7 +85,7 @@ def forward_pass(
     state_visitations = np.zeros(mdp.n_states)
     for i in range(iterations):
         state = np.random.randint(0, mdp.n_states)  # Start from a randomly sampled state
-        for _ in tqdm(range(2000)):
+        for _ in range(2000):
             state_visitations[state] += 1
             action = np.random.choice(mdp.n_actions, p=policy[state])
             next_state = mdp.step(state, action)
