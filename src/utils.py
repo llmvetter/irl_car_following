@@ -45,14 +45,15 @@ def backward_pass(
         reward_func: LinearRewardFunction,
         gamma: float=0.99,
         theta: float=1e-6, 
-        max_iterations: int=1000, 
+        max_iterations: int=100, 
         temperature: float=1.0,
 ) -> np.ndarray:
     """
     gamma: discount factor for future state reward
     """
     V = np.random.uniform(low=0.0, high=0.1, size=mdp.n_states)
-    for _ in range(max_iterations):
+    for i in range(max_iterations):
+        logging.info(f'Backwardpass {i/max_iterations}% complete')
         delta = 0
         for s in range(mdp.n_states):
             v = V[s]
