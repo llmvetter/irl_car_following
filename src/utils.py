@@ -1,9 +1,6 @@
 import numpy as np
 import logging
-from scipy.special import logsumexp
-from scipy import sparse
-from itertools import product
-from scipy import sparse
+from tqdm import tqdm
 
 from src.models.mdp import CarFollowingMDP
 from src.models.trajectory import Trajectories
@@ -47,68 +44,54 @@ def initial_probabilities_from_trajectories(
 def backward_pass(
         mdp: CarFollowingMDP, 
         reward_func: LinearRewardFunction,
+        gamma: float=0.99,
+        theta: float=1e-6, 
+        max_iterations: int=1000, 
+        temperature: float=1.0,
 ) -> np.ndarray:
-    n_states = mdp.n_states
-    n_actions = mdp.n_actions
+    """
+    gamma: discount factor for future state reward
+    """
+    V = np.random.uniform(low=0.0, high=0.1, size=mdp.n_states)
+    for _ in range(max_iterations):
+        delta = 0
+        for s in tqdm(range(mdp.n_states)):
+            v = V[s]
+            Q_sa = np.zeros(mdp.n_actions)
+            for a in range(mdp.n_actions):
+                for next_s, prob in mdp.get_transitions(s, a):
+                    Q_sa[a] += prob * (reward_func.get_reward(s) + gamma * V[int(next_s)])
+            V[s] = temperature * np.log(np.sum(np.exp(Q_sa / temperature))+ 1e-8)
+            delta = max(delta, abs(v - V[s]))
+        if delta < theta:
+            break
     
-    # Precompute rewards
-    reward = np.array([reward_func.get_reward(s) for s in range(n_states)])
-
-    # Backward Pass
-    # init zs (state partition function)
-    log_zs = np.zeros(n_states)
-
-    for i in range(2*n_states):
-        if i % 1000 == 0:
-            logging.info(f"Backwarpass {i/n_states}% complete.")
-        log_za = np.full((n_states, n_actions), -np.inf)
-        for s_from, a in product(range(n_states), range(n_actions)):
-            #sum state value for all possible next state given current state-action pair
-            log_za[s_from, a] = reward[s_from] + logsumexp(np.log(mdp.T[s_from, :, a] + 1e-300) + log_zs)
-        log_zs = logsumexp(log_za, axis=1)
-    p_action = np.exp(log_za - log_zs[:, None])
-    return p_action
-
-def create_sparse_transition_matrix(mdp):
-    n_states = mdp.n_states
-    n_actions = mdp.n_actions
-    T_reshaped = mdp.T.reshape(n_states * n_actions, n_states)
-    T_sparse = sparse.csr_matrix(T_reshaped)
+    # Compute the policy
+    policy = np.zeros((mdp.n_states, mdp.n_actions))
+    for s in tqdm(range(mdp.n_states)):
+        Q_sa = np.zeros(mdp.n_actions)
+        for a in range(mdp.n_actions):
+            for next_s, prob in mdp.get_transitions(s, a):
+                Q_sa[a] += prob * (reward_func.get_reward(s) + gamma * V[int(next_s)])
+        policy[s] = np.exp((Q_sa - V[s]) / temperature)
+        policy[s] /= np.sum(policy[s])
     
-    return T_sparse
+    return policy
 
 def forward_pass(
         mdp: CarFollowingMDP,
-        p_action: np.ndarray,
+        policy: np.ndarray,
+        iterations: int = 100,
 ) -> np.ndarray:
+    state_visitations = np.zeros(mdp.n_states)
+    for i in range(iterations):
+        state = np.random.randint(0, mdp.n_states)  # Start from a randomly sampled state
+        for _ in tqdm(range(2000)):
+            state_visitations[state] += 1
+            action = np.random.choice(mdp.n_actions, p=policy[state])
+            next_state = mdp.step(state, action)
+            state = next_state
+    # Normalize
+    state_visitations /= state_visitations.sum()
 
-    p_initial = np.ones(mdp.n_states) / mdp.n_states
-    T_sparse = create_sparse_transition_matrix(mdp)
-    p_action_sparse = sparse.csr_matrix(p_action)
-    
-    # Initialize d with p_initial
-    d = sparse.csr_matrix(p_initial).T
-    
-    # Small constant to prevent underflow
-    epsilon = 1e-10
-    
-    for t in range(mdp.n_states):
-        # Element-wise multiplication
-        s_a_probs = d.multiply(p_action_sparse)
-        s_a_probs_r = s_a_probs.reshape(1, -1)
-        d_next = s_a_probs_r.dot(T_sparse).T
-        
-        # Convert to dense, add epsilon, and normalize
-        d_dense = d_next.toarray() + epsilon
-        d_dense /= d_dense.sum() + epsilon
-        
-        # Convert back to sparse
-        d = sparse.csr_matrix(d_dense)
-        
-        # Break if d becomes all zeros
-        if d.nnz == 0:
-            print(f"Warning: d became all zeros at iteration {t}")
-            break
-    
-    state_frequencies = d.sum(axis=1).A1
-    return state_frequencies
+    return state_visitations
