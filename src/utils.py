@@ -45,7 +45,7 @@ def backward_pass(
         reward_func: LinearRewardFunction,
         gamma: float=0.99,
         theta: float=1e-6, 
-        max_iterations: int=100, 
+        max_iterations: int=50, 
         temperature: float=1.0,
 ) -> np.ndarray:
     """
