@@ -1,5 +1,6 @@
 import numpy as np
 import logging
+from scipy.special import logsumexp
 
 from src.models.mdp import CarFollowingMDP
 from src.models.trajectory import Trajectories
@@ -51,30 +52,32 @@ def backward_pass(
     """
     gamma: discount factor for future state reward
     """
-    V = np.random.uniform(low=0.0, high=0.1, size=mdp.n_states)
+    log_V = np.zeros(mdp.n_states)
+
     for i in range(max_iterations):
-        logging.info(f'Backwardpass {i/max_iterations}% complete')
+        logging.info(f'Backward pass {i/max_iterations*100:.2f}% complete')
         delta = 0
         for s in range(mdp.n_states):
-            v = V[s]
-            Q_sa = np.zeros(mdp.n_actions)
+            old_v = log_V[s]
+            log_Q_sa = np.full(mdp.n_actions, -np.inf)
             for a in range(mdp.n_actions):
+                log_Q_sa[a] = np.log(reward_func.get_reward(s) + 1e-300) 
                 for next_s, prob in mdp.get_transitions(s, a):
-                    Q_sa[a] += prob * (reward_func.get_reward(s) + gamma * V[int(next_s)])
-            V[s] = temperature * np.log(np.sum(np.exp(Q_sa / temperature))+ 1e-8)
-            delta = max(delta, abs(v - V[s]))
+                   log_Q_sa[a] = np.logaddexp(log_Q_sa[a], np.log(prob + 1e-300) + gamma * log_V[int(next_s)])
+            log_V[s] = temperature * logsumexp(log_Q_sa / temperature)
+            delta = max(delta, abs(np.exp(old_v) - np.exp(log_V[s])))
         if delta < theta:
             break
-    
+
     # Compute the policy
     policy = np.zeros((mdp.n_states, mdp.n_actions))
     for s in range(mdp.n_states):
-        Q_sa = np.zeros(mdp.n_actions)
+        log_Q_sa = np.full(mdp.n_actions, -np.inf)
         for a in range(mdp.n_actions):
+            log_Q_sa[a] = np.log(reward_func.get_reward(s) + 1e-300)
             for next_s, prob in mdp.get_transitions(s, a):
-                Q_sa[a] += prob * (reward_func.get_reward(s) + gamma * V[int(next_s)])
-        policy[s] = np.exp((Q_sa - V[s]) / temperature)
-        policy[s] /= np.sum(policy[s])
+                log_Q_sa[a] = np.logaddexp(log_Q_sa[a], np.log(prob + 1e-300) + gamma * log_V[int(next_s)])
+        policy[s] = np.exp((log_Q_sa - logsumexp(log_Q_sa)) / temperature)
     
     return policy
 
