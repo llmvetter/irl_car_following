@@ -22,7 +22,7 @@ mdp = CarFollowingMDP(
 logging.info("Init Reward Function")
 reward_function = LinearRewardFunction(mdp=mdp)
 
-omega = np.random.uniform(0, 1, reward_function.num_features)
+omega = np.random.uniform(0.1, 0.5, reward_function.num_features)
 
 logging.info("Init Optimizer")
 optimizer = GradientDescentOptimizer(omega=omega)

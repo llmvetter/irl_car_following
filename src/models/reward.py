@@ -17,14 +17,9 @@ class LinearRewardFunction:
     def set_weights(self, weights) -> None:
         self.weights = weights
 
-    def normalize_state_features(self, state: tuple) -> np.ndarray:
-        return (np.array(state) - self.mean_features) / self.std_features
-
     def get_reward(
             self, 
             state: int,
     ) -> np.ndarray:
         state = self.mdp._index_to_state(state)
-        state_nomalized = self.normalize_state_features(state)
-        raw_reward = np.dot(self.weights, np.array(state_nomalized))
-        return raw_reward
+        return np.dot(self.weights, state)
