@@ -59,6 +59,7 @@ class Trainer:
             )
             #calculate feature expectation from svf
             grad = np.dot((expert_svf - expected_svf), self.mdp.state_space)
+            logging.info(f'Expected feature expectation: {np.dot(expected_svf, self.mdp.state_space)}')
 
             # perform optimization step and compute delta for convergence
             omega = self.optimizer.step(grad)

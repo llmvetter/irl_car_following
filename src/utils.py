@@ -12,12 +12,13 @@ def svf_from_trajectories(
         trajectories: Trajectories,
         mdp: CarFollowingMDP,
 ) -> np.ndarray:
-    fe = np.zeros(mdp.n_states)
+    svf = np.zeros(mdp.n_states)
     for trajectory in trajectories:
         for state_action_pair in trajectory:
             idx = state_action_pair.state.index
-            fe[idx] += 1
-    return fe/len(trajectories.trajectories)
+            svf[idx] += 1
+    norm_svf = svf/sum(svf)
+    return norm_svf
 
 def terminal_probabilities_from_trajectories(
         trajectories: Trajectories,
