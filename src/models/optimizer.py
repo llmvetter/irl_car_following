@@ -5,7 +5,7 @@ class GradientDescentOptimizer:
     def __init__(
             self,
             omega: np.ndarray,
-            learning_rate: float = 0.2,
+            learning_rate: float = 0.05,
     ) -> None:
         self.learning_rate = learning_rate
         self.omega = omega
