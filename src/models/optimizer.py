@@ -1,18 +1,30 @@
-import numpy as np
+import torch
+import torch.optim as optim
 
-class GradientDescentOptimizer:
-#have to use ascent optimizer i think?
+from src.models.reward import RewardNetwork
+
+class GradientAscentOptimizer:
     def __init__(
             self,
-            omega: np.ndarray,
-            learning_rate: float = 0.05,
-    ) -> None:
-        self.learning_rate = learning_rate
-        self.omega = omega
+            model: RewardNetwork, 
+            learning_rate: float = 0.01
+    ):
+        self.model = model
+        self.optimizer = optim.Adam(model.parameters(), lr=learning_rate)
 
-    def step(
-            self,
-            gradient: float,
-    ) -> None:
-        self.omega += self.learning_rate * gradient
-        return self.omega
+    def step(self, gradient: torch.Tensor):
+        self.optimizer.zero_grad()
+        
+        # Manually set the gradients (negative for ascent)
+        for param, grad in zip(self.model.parameters(), gradient):
+            if param.grad is None:
+                param.grad = -grad.clone().detach()
+            else:
+                param.grad.data = -grad.clone().detach()
+        
+        self.optimizer.step()
+        return [param.data.clone().detach().numpy() for param in self.model.parameters()]
+
+    @property
+    def omega(self):
+        return [param.data.clone().detach().numpy() for param in self.model.parameters()]

@@ -7,9 +7,9 @@ from src.utils import (
     svf_from_trajectories,
 )
 from src.models.trajectory import Trajectories
-from src.models.reward import LinearRewardFunction 
+from src.models.reward import RewardNetwork 
 from src.models.mdp import CarFollowingMDP
-from src.models.optimizer import GradientDescentOptimizer
+from src.models.optimizer import GradientAscentOptimizer
 
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
 
@@ -17,8 +17,8 @@ class Trainer:
     def __init__(
             self,
             trajectories: Trajectories,
-            optimizer: GradientDescentOptimizer,
-            reward_function: LinearRewardFunction,
+            optimizer: GradientAscentOptimizer,
+            reward_function: RewardNetwork,
             mdp: CarFollowingMDP,
             eps=1e-4,
     ) -> None:

@@ -4,8 +4,8 @@ import logging
 
 from src.models.trainer import Trainer
 from src.models.trajectory import Trajectories
-from src.models.optimizer import GradientDescentOptimizer
-from src.models.reward import LinearRewardFunction
+from src.models.optimizer import GradientAscentOptimizer
+from src.models.reward import RewardNetwork
 from src.models.preprocessor import Preprocessor
 from src.models.mdp import CarFollowingMDP
 
@@ -20,12 +20,12 @@ mdp = CarFollowingMDP(
     g_steps=0.25,
 )
 logging.info("Init Reward Function")
-reward_function = LinearRewardFunction(mdp=mdp)
+reward_function = RewardNetwork(mdp=mdp)
 
 omega = np.random.uniform(0.1, 0.5, reward_function.num_features)
 
 logging.info("Init Optimizer")
-optimizer = GradientDescentOptimizer(omega=omega)
+optimizer = GradientAscentOptimizer(omega=omega)
 
 logging.info("Loading Trajectories")
 expert_trajectories = Trajectories([])

@@ -4,7 +4,7 @@ from scipy.special import logsumexp
 
 from src.models.mdp import CarFollowingMDP
 from src.models.trajectory import Trajectories
-from src.models.reward import LinearRewardFunction
+from src.models.reward import RewardNetwork
 
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
 
@@ -44,7 +44,7 @@ def initial_probabilities_from_trajectories(
 
 def backward_pass(
         mdp: CarFollowingMDP, 
-        reward_func: LinearRewardFunction,
+        reward_func: RewardNetwork,
         gamma: float=0.99,
         theta: float=1e-6, 
         max_iterations: int=50, 
@@ -62,11 +62,11 @@ def backward_pass(
             old_v = log_V[s]
             log_Q_sa = np.full(mdp.n_actions, -np.inf)
             for a in range(mdp.n_actions):
-                log_Q_sa[a] = np.log(reward_func.get_reward(s) + 1e-300) 
+                log_Q_sa[a] = np.log1p(reward_func.get_reward(s)) 
                 for next_s, prob in mdp.get_transitions(s, a):
                    log_Q_sa[a] = np.logaddexp(log_Q_sa[a], np.log(prob + 1e-300) + gamma * log_V[int(next_s)])
             log_V[s] = temperature * logsumexp(log_Q_sa / temperature)
-            delta = max(delta, abs(np.exp(old_v) - np.exp(log_V[s])))
+            delta = max(delta, abs(np.expm1(old_v - log_V[s])))
         if delta < theta:
             break
 
