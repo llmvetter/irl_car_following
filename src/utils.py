@@ -20,17 +20,6 @@ def svf_from_trajectories(
     norm_svf = svf/sum(svf)
     return norm_svf
 
-def terminal_probabilities_from_trajectories(
-        trajectories: Trajectories,
-        n_states: int,
-) -> np.ndarray:
-    p = np.zeros(n_states)
-    for trajectory in trajectories:
-        terminal_state = trajectory.trajectory[-1].state.index
-        p[terminal_state] += 1.0
-
-    return p/len(trajectories.trajectories)
-
 def initial_probabilities_from_trajectories(
         trajectories: Trajectories,
         n_states: int,
@@ -62,9 +51,9 @@ def backward_pass(
             old_v = log_V[s]
             log_Q_sa = np.full(mdp.n_actions, -np.inf)
             for a in range(mdp.n_actions):
-                log_Q_sa[a] = np.log(reward_func.get_reward(s) + 1e-300) 
+                log_Q_sa[a] = np.log(reward_func.get_reward(s)) 
                 for next_s, prob in mdp.get_transitions(s, a):
-                   log_Q_sa[a] = np.logaddexp(log_Q_sa[a], np.log(prob + 1e-300) + gamma * log_V[int(next_s)])
+                   log_Q_sa[a] = np.logaddexp(log_Q_sa[a], np.log(prob) + gamma * log_V[int(next_s)])
             log_V[s] = temperature * logsumexp(log_Q_sa / temperature)
             delta = max(delta, abs(np.exp(old_v) - np.exp(log_V[s])))
         if delta < theta:
@@ -75,9 +64,9 @@ def backward_pass(
     for s in range(mdp.n_states):
         log_Q_sa = np.full(mdp.n_actions, -np.inf)
         for a in range(mdp.n_actions):
-            log_Q_sa[a] = np.log(reward_func.get_reward(s) + 1e-300)
+            log_Q_sa[a] = np.log(reward_func.get_reward(s))
             for next_s, prob in mdp.get_transitions(s, a):
-                log_Q_sa[a] = np.logaddexp(log_Q_sa[a], np.log(prob + 1e-300) + gamma * log_V[int(next_s)])
+                log_Q_sa[a] = np.logaddexp(log_Q_sa[a], np.log(prob) + gamma * log_V[int(next_s)])
         policy[s] = np.exp((log_Q_sa - logsumexp(log_Q_sa)) / temperature)
     
     return policy
