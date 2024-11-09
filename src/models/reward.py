@@ -1,34 +1,29 @@
 import torch
 import torch.nn as nn
 
+from src.models.mdp import CarFollowingMDP
+
 class RewardNetwork(nn.Module):
-    def __init__(self, mdp, hidden_size=8):
+    def __init__(
+            self,
+            mdp: CarFollowingMDP,
+            layers: tuple = (8, 16)
+    ):
         super(RewardNetwork, self).__init__()
         self.mdp = mdp
-        self.input_size = 2
-        self.hidden_size = hidden_size
-        self.output_size = 1
-        
-        self.model = nn.Sequential(
-            nn.Linear(self.input_size, self.hidden_size),
+        self.net = nn.Sequential(
+            nn.Linear(2, layers[0]),
             nn.ReLU(),
-            nn.Linear(self.hidden_size, self.output_size),
-            nn.Softplus()
+            nn.Linear(layers[0], layers[1]),
+            nn.ReLU(),
+            nn.Linear(layers[1], 1),
+            nn.Tanh(),
         )
 
-    def forward(self, x):
-        return self.model(x)
-
-    def get_reward(self, state):
-        state_vec = torch.tensor(self.mdp._index_to_state(state), dtype=torch.float32)
+    def get_reward(self, state_idx):
+        features = self.mdp._index_to_state(state_idx)
+        feature_tensor = torch.tensor(features ,dtype=torch.float32)
         with torch.no_grad():
-            return self.forward(state_vec).item()
+            return self.net(feature_tensor)
+    
 
-    def set_weights(self, weights):
-        with torch.no_grad():
-            for param, weight in zip(self.parameters(), weights):
-                param.copy_(torch.tensor(weight))
-
-    @property
-    def weights(self):
-        return [param.data.numpy() for param in self.parameters()]
