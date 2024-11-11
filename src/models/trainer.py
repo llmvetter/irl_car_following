@@ -44,10 +44,8 @@ class Trainer:
             policy: torch.tensor = backward_pass(
                 mdp=self.mdp,
                 reward_func=self.reward_function,
-                gamma=0.98,
-                max_iterations=40,
-                temperature=2,
-
+                epsilon=0.1,
+                max_iterations=50,
             )
             logging.info("Entering Forward Pass")
             expected_svf: np.ndarray = forward_pass(
