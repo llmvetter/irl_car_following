@@ -58,13 +58,17 @@ class Trainer:
                 iterations=100,
             )
             #calculate feature expectation from svf
-            grad = np.dot((expert_svf - expected_svf), self.mdp.state_space)
+            grad = np.dot(
+                (expert_svf - expected_svf), self.mdp.state_space
+            )
             logging.info(
                 f'Expected feature expectation: {np.dot(expected_svf, self.mdp.state_space)}'
             )
 
             # perform optimization step and compute delta for convergence
-            loss = self.optimizer.step(torch.tensor(grad, dtype=torch.float32))
+            loss = self.optimizer.step(
+                torch.tensor(grad, dtype=torch.float32)
+            )
             
             logging.info(f'gradient computation complete: {loss}')
 

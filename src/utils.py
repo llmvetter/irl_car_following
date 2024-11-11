@@ -58,13 +58,18 @@ def backward_pass(
     for i in range(max_iterations):
         logging.info(f'Backward pass {i/max_iterations*100:.2f}% complete')
         for s in range(mdp.n_states):
-            old_v = log_V[s]
             log_Q_sa = torch.full((mdp.n_actions,), float('-inf'))
             for a in range(mdp.n_actions):
-                feature_tensor = torch.tensor(mdp._index_to_state(s), dtype=torch.float32)
-                log_Q_sa[a] = torch.log(reward_func.forward(feature_tensor, grad=False)) .squeeze()
+                feature_tensor = torch.tensor(
+                    mdp._index_to_state(s), dtype=torch.float32
+                )
+                log_Q_sa[a] = torch.log(
+                    reward_func.forward(feature_tensor, grad=False)
+                ) .squeeze()
                 for next_s, prob in mdp.get_transitions(s, a):
-                   log_Q_sa[a] = torch.logaddexp(log_Q_sa[a], torch.log(torch.tensor(prob)) + gamma * log_V[int(next_s)])
+                   log_Q_sa[a] = torch.logaddexp(
+                       log_Q_sa[a], torch.log(torch.tensor(prob)) + gamma * log_V[int(next_s)]
+                    )
             log_V[s] = temperature * torch.logsumexp(log_Q_sa / temperature, dim=0)
 
     # Compute the policy
@@ -75,7 +80,9 @@ def backward_pass(
             feature_tensor = torch.tensor(mdp._index_to_state(s), dtype=torch.float32)
             log_Q_sa[a] = torch.log(reward_func.forward(feature_tensor, grad=False))
             for next_s, prob in mdp.get_transitions(s, a):
-                log_Q_sa[a] = torch.logaddexp(log_Q_sa[a], torch.log(torch.tensor(prob)) + gamma * log_V[int(next_s)])
+                log_Q_sa[a] = torch.logaddexp(
+                    log_Q_sa[a], torch.log(torch.tensor(prob)) + gamma * log_V[int(next_s)]
+                )
         policy[s] = torch.exp((log_Q_sa - torch.logsumexp(log_Q_sa, dim=0)) / temperature)
     
     return policy
