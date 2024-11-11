@@ -75,7 +75,7 @@ def backward_pass(
     # Compute the policy
     policy = np.zeros((mdp.n_states, mdp.n_actions))
     for s in range(mdp.n_states):
-        log_Q_sa = torch.full(mdp.n_actions, float('-inf'))
+        log_Q_sa = torch.full((mdp.n_actions,), float('-inf'))
         for a in range(mdp.n_actions):
             feature_tensor = torch.tensor(mdp._index_to_state(s), dtype=torch.float32)
             log_Q_sa[a] = torch.log(reward_func.forward(feature_tensor, grad=False))
@@ -92,8 +92,7 @@ def forward_pass(
 ) -> np.ndarray:
     state_visitations = torch.zeros(mdp.n_states)
     for i in range(iterations):
-        state = torch.randint(0, mdp.n_states, (1,)).item()  # Start from a randomly sampled state
-        print(f"starting from state {i}")
+        state = torch.randint(0, mdp.n_states, (1,)).item() # TODO: maybe match trajectories
         for _ in range(2000):
             state_visitations[state] += 1
             action = torch.multinomial(policy[state], 1).item()
