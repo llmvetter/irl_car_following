@@ -12,5 +12,6 @@
 ml purge 
 
 ml release/24.04  GCC/13.2.0 SciPy-bundle/2023.11
+ml PyTorch/1.12.1-CUDA-11.7.0
 
 srun python /home/leve469a/car_following/runner.py
