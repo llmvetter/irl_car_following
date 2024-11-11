@@ -42,7 +42,6 @@ trainer = Trainer(
         optimizer,
         reward_function,
         mdp,
-        eps=1e-4,
 )
 
 logging.info("Init IRL Loop")
