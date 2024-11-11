@@ -44,12 +44,12 @@ class Trainer:
         while delta > self.eps:
 
             logging.info("Backwardpass")
-            policy = backward_pass(
+            policy: torch.tensor = backward_pass(
                 mdp=self.mdp,
                 reward_func=self.reward_function,
             )
             logging.info("Forward Pass")
-            expected_svf = forward_pass(
+            expected_svf: np.ndarray = forward_pass(
                 mdp=self.mdp,
                 policy=policy,
             )

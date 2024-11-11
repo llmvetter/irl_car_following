@@ -17,13 +17,17 @@ class RewardNetwork(nn.Module):
             nn.Linear(layers[0], layers[1]),
             nn.ReLU(),
             nn.Linear(layers[1], 1),
-            nn.Tanh(),
+            nn.Softplus(),
         )
 
     def forward(
             self,
             state_tensor: torch.tensor,
+            grad: bool = True,
     ) -> torch.tensor:
-        return self.net(state_tensor)
-    
+        if grad:
+            return self.net(state_tensor)
+        else:
+            with torch.no_grad():
+                return self.net(state_tensor)
 
