@@ -65,11 +65,11 @@ class Trainer:
                 f'Expected feature expectation: {np.dot(expected_svf, self.mdp.state_space)}'
             )
 
-            # perform optimization step and compute delta for convergence
+            # perform optimization step
             loss = self.optimizer.step(
                 torch.tensor(grad, dtype=torch.float32)
             )
             
-            logging.info(f'gradient computation complete: {loss}')
+            logging.info(f'Epoch loss: {loss}')
 
         return self.reward_function
