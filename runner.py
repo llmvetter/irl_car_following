@@ -26,7 +26,7 @@ logging.info("Init Optimizer")
 optimizer = GradientAscentOptimizer(
     mdp=mdp,
     reward_network=reward_function,
-    lr=0.02
+    lr=0.001
 )
 
 logging.info("Loading Trajectories")

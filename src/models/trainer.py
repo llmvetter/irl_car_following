@@ -21,18 +21,16 @@ class Trainer:
             optimizer: GradientAscentOptimizer,
             reward_function: RewardNetwork,
             mdp: CarFollowingMDP,
-            eps=1e-4,
     ) -> None:
 
         self.trajectories = trajectories
         self.optimizer = optimizer
         self.reward_function = reward_function
         self.mdp = mdp
-        self.eps= eps
     
     def train(
             self,
-            epochs: int = 20,
+            epochs: int = 10,
     ) -> np.ndarray:
 
         expert_svf = svf_from_trajectories(
@@ -47,7 +45,7 @@ class Trainer:
                 mdp=self.mdp,
                 reward_func=self.reward_function,
                 gamma=0.98,
-                max_iterations=50,
+                max_iterations=40,
                 temperature=2,
 
             )
