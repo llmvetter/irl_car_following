@@ -43,7 +43,7 @@ class Trainer:
             logging.info("Entering Backwardpass")
             policy: torch.tensor = backward_pass(
                 mdp=self.mdp,
-                reward_func=self.reward_function,
+                reward=self.reward_function,
                 epsilon=0.1,
                 max_iterations=50,
             )
