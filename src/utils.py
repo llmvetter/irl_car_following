@@ -47,7 +47,7 @@ def backward_pass(
         mdp: CarFollowingMDP, 
         reward_func: RewardNetwork,
         gamma: float=0.99,
-        max_iterations: int=50, 
+        max_iterations: int=1, 
         temperature: float=1.0,
 ) -> torch.tensor:
     """
@@ -68,7 +68,7 @@ def backward_pass(
             log_V[s] = temperature * torch.logsumexp(log_Q_sa / temperature, dim=0)
 
     # Compute the policy
-    policy = np.zeros((mdp.n_states, mdp.n_actions))
+    policy = torch.zeros((mdp.n_states, mdp.n_actions))
     for s in range(mdp.n_states):
         log_Q_sa = torch.full((mdp.n_actions,), float('-inf'))
         for a in range(mdp.n_actions):
