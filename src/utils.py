@@ -55,6 +55,7 @@ def backward_pass(
 
     while iteration < max_iterations:
         iteration +=1
+        logging.info(f'Backward pass {iteration/max_iterations*100:.2f}% complete')
         ValueFunction_t = ValueFunction.clone()
         Q_sa = torch.zeros((n_states, n_actions))
         for state in range(n_states):
