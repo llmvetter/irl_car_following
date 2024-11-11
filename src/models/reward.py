@@ -20,10 +20,10 @@ class RewardNetwork(nn.Module):
             nn.Tanh(),
         )
 
-    def get_reward(self, state_idx):
-        features = self.mdp._index_to_state(state_idx)
-        feature_tensor = torch.tensor(features ,dtype=torch.float32)
-        with torch.no_grad():
-            return self.net(feature_tensor)
+    def forward(
+            self,
+            state_tensor: torch.tensor,
+    ) -> torch.tensor:
+        return self.net(state_tensor)
     
 

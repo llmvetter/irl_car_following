@@ -1,30 +1,32 @@
 import torch
+import numpy as np
 import torch.optim as optim
 
 from src.models.reward import RewardNetwork
+from src.models.mdp import CarFollowingMDP
 
 class GradientAscentOptimizer:
+    
     def __init__(
             self,
-            model: RewardNetwork, 
-            learning_rate: float = 0.01
+            reward_network: RewardNetwork,
+            mdp: CarFollowingMDP,
+            lr: float = 1e-3
     ):
-        self.model = model
-        self.optimizer = optim.Adam(model.parameters(), lr=learning_rate)
+        self.reward_network = reward_network
+        self.mdp = mdp
+        self.optimizer = optim.Adam(self.reward_network.net.parameters(), lr=lr)
 
-    def step(self, gradient: torch.Tensor):
+    def step(
+            self,
+            gradient: torch.tensor,
+    ) -> float:
+
+        states_tensor = torch.tensor(self.mdp.state_space, dtype=torch.float32)
+        rewards = self.reward_network(states_tensor)
+        loss = -torch.sum(gradient * rewards)
+
         self.optimizer.zero_grad()
-        
-        # Manually set the gradients (negative for ascent)
-        for param, grad in zip(self.model.parameters(), gradient):
-            if param.grad is None:
-                param.grad = -grad.clone().detach()
-            else:
-                param.grad.data = -grad.clone().detach()
-        
+        loss.backward()
         self.optimizer.step()
-        return [param.data.clone().detach().numpy() for param in self.model.parameters()]
-
-    @property
-    def omega(self):
-        return [param.data.clone().detach().numpy() for param in self.model.parameters()]
+        return loss.item()

@@ -1,5 +1,6 @@
 import numpy as np
 import logging
+import torch
 
 from src.utils import (
     forward_pass,
@@ -41,11 +42,6 @@ class Trainer:
         delta = np.inf
 
         while delta > self.eps:
-            #retain old omega value
-            omega_old = self.optimizer.omega.copy()
-
-            # Set the current weights in the reward function
-            self.reward_function.set_weights(self.optimizer.omega)
 
             logging.info("Backwardpass")
             policy = backward_pass(
@@ -62,12 +58,8 @@ class Trainer:
             logging.info(f'Expected feature expectation: {np.dot(expected_svf, self.mdp.state_space)}')
 
             # perform optimization step and compute delta for convergence
-            omega = self.optimizer.step(grad)
+            loss = self.optimizer.step(torch.tensor(grad, dtype=torch.float32))
             
-            # re-compute delta for convergence check
-            delta = np.max(np.abs(omega_old - omega))
-            logging.info(f'gradient computation complete: {delta}')
+            logging.info(f'gradient computation complete: {loss}')
 
-        # Set final weights and return the reward function
-        self.reward_function.set_weights(omega)
-        return self.reward_function.weights
+        return self.reward_function

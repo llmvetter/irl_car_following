@@ -22,10 +22,12 @@ mdp = CarFollowingMDP(
 logging.info("Init Reward Function")
 reward_function = RewardNetwork(mdp=mdp)
 
-omega = np.random.uniform(0.1, 0.5, reward_function.num_features)
-
 logging.info("Init Optimizer")
-optimizer = GradientAscentOptimizer(omega=omega)
+optimizer = GradientAscentOptimizer(
+    mdp=mdp,
+    reward_network=reward_function,
+    lr=0.02
+)
 
 logging.info("Loading Trajectories")
 expert_trajectories = Trajectories([])
