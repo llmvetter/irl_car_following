@@ -31,7 +31,7 @@ class Trainer:
     def train(
             self,
             epochs: int = 10,
-    ) -> np.ndarray:
+    ) -> RewardNetwork:
 
         expert_svf = svf_from_trajectories(
             trajectories=self.trajectories,

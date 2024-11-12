@@ -1,5 +1,5 @@
 import pickle
-import numpy as np
+import torch
 import logging
 
 from src.models.trainer import Trainer
@@ -45,7 +45,7 @@ trainer = Trainer(
 )
 
 logging.info("Init IRL Loop")
-extracted_reward = trainer.train()
+extracted_reward_function: RewardNetwork = trainer.train()
 
-with open('home/h6/leve469a/results/reward_function.pickle', 'wb') as file:
-    pickle.dump(extracted_reward, file)
+torch.save(extracted_reward_function.state_dict(), 'home/h6/leve469a/results/reward_function.pickle')
+logging.info("RewardNetwork has been saved.")
