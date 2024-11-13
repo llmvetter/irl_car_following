@@ -30,7 +30,7 @@ class Trainer:
     
     def train(
             self,
-            epochs: int = 2,
+            epochs: int = 20,
     ) -> RewardNetwork:
 
         expert_svf = svf_from_trajectories(
@@ -45,13 +45,13 @@ class Trainer:
                 mdp=self.mdp,
                 reward=self.reward_function,
                 epsilon=0.1,
-                max_iterations=2,
+                max_iterations=20,
             )
             logging.info("Entering Forward Pass")
             expected_svf: np.ndarray = forward_pass(
                 mdp=self.mdp,
                 policy=policy,
-                iterations=10,
+                iterations=100,
             )
             #calculate feature expectation from svf
             grad = np.dot(

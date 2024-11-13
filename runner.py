@@ -26,7 +26,7 @@ logging.info("Init Optimizer")
 optimizer = GradientAscentOptimizer(
     mdp=mdp,
     reward_network=reward_function,
-    lr=0.001
+    lr=0.002
 )
 
 logging.info("Loading Trajectories")
@@ -47,5 +47,5 @@ trainer = Trainer(
 logging.info("Init IRL Loop")
 extracted_reward_function: RewardNetwork = trainer.train()
 
-torch.save(extracted_reward_function.state_dict(), '/home/h6/leve469a/results/reward_function.pickle')
+torch.save(extracted_reward_function.state_dict(), '/home/h6/leve469a/results/reward_function.pth')
 logging.info("RewardNetwork has been saved.")
