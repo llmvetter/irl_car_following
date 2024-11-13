@@ -47,5 +47,5 @@ trainer = Trainer(
 logging.info("Init IRL Loop")
 extracted_reward_function: RewardNetwork = trainer.train()
 
-torch.save(extracted_reward_function.state_dict(), 'home/h6/leve469a/results/reward_function.pickle')
+torch.save(extracted_reward_function.state_dict(), '/home/h6/leve469a/results/reward_function.pickle')
 logging.info("RewardNetwork has been saved.")
