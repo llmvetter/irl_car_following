@@ -1,5 +1,6 @@
 import torch
 import logging
+import pickle
 
 from src.models.trainer import Trainer
 from src.models.trajectory import Trajectories
@@ -50,7 +51,7 @@ trainer = Trainer(
 )
 
 logging.info("Init IRL Loop")
-extracted_reward_function: RewardNetwork = trainer.train(
+extracted_reward_function, expected_svf = trainer.train(
     epochs=config.epochs,
     epsilon=config.backwardpass['epsilon'],
     backward_it=config.backwardpass['iterations'],
@@ -59,3 +60,6 @@ extracted_reward_function: RewardNetwork = trainer.train(
 
 torch.save(extracted_reward_function.state_dict(), '/home/h6/leve469a/results/reward_function.pth')
 logging.info("RewardNetwork has been saved.")
+with open('/home/h6/leve469a/results/expected_svf.pkl', 'wb') as file:
+    pickle.dump(expected_svf, file)
+logging.info("Expected state visitation frequency has been saved.")

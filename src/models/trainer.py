@@ -1,4 +1,5 @@
 import numpy as np
+from typing import Tuple
 import logging
 import torch
 
@@ -38,7 +39,7 @@ class Trainer:
             backward_it: int,
             forward_it: int,
 
-    ) -> RewardNetwork:
+    ) -> Tuple[RewardNetwork, np.ndarray]:
 
         expert_svf = svf_from_trajectories(
             trajectories=self.trajectories,
@@ -75,4 +76,4 @@ class Trainer:
             
             logging.info(f'Epoch loss: {loss}')
 
-        return self.reward_function
+        return self.reward_function, expected_svf
