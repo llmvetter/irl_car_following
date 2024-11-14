@@ -17,7 +17,7 @@ class RewardNetwork(nn.Module):
             nn.Linear(layers[0], layers[1]),
             nn.ReLU(),
             nn.Linear(layers[1], layers[2]),
-            nn.ReLu(),
+            nn.ReLU(),
             nn.Linear(layers[2], 1),
             nn.Softplus(),
         )
