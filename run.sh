@@ -4,7 +4,7 @@
 #SBATCH --cpus-per-task=50
 #SBATCH --mem-per-cpu=6000
 #SBATCH --nodes=1
-#SBATCH --time=00:10:00
+#SBATCH --time=10:00:00
 #SBATCH -J jobname
 #SBATCH --error="/home/leve469a/myjob-%J.out"
 #SBATCH --output="/home/leve469a/myjob-%J.out"
