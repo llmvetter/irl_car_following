@@ -51,7 +51,7 @@ def backward_pass(
     iteration = 0
     n_states = mdp.n_states
     n_actions = mdp.n_actions
-    ValueFunction = torch.full((n_states,), -10)
+    ValueFunction = torch.full((n_states,), -1000)
 
     while iteration < max_iterations:
         iteration +=1
@@ -83,11 +83,12 @@ def forward_pass(
         mdp: CarFollowingMDP,
         policy: torch.tensor,
         iterations: int = 100,
+        steps: int = 2000,
 ) -> np.ndarray:
     state_visitations = torch.zeros(mdp.n_states)
     for i in range(iterations):
         state = torch.randint(0, mdp.n_states, (1,)).item() # TODO: maybe match trajectories
-        for _ in range(2000):
+        for _ in range(steps):
             state_visitations[state] += 1
             action = torch.multinomial(policy[state], 1).item()
             next_state = mdp.step(state, action)

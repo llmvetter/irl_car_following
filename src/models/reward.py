@@ -7,7 +7,7 @@ class RewardNetwork(nn.Module):
     def __init__(
             self,
             mdp: CarFollowingMDP,
-            layers: tuple = (8, 16)
+            layers: list,
     ):
         super(RewardNetwork, self).__init__()
         self.mdp = mdp
@@ -16,7 +16,9 @@ class RewardNetwork(nn.Module):
             nn.ReLU(),
             nn.Linear(layers[0], layers[1]),
             nn.ReLU(),
-            nn.Linear(layers[1], 1),
+            nn.Linear(layers[1], layers[2]),
+            nn.ReLu(),
+            nn.Linear(layers[2], 1),
             nn.Softplus(),
         )
 

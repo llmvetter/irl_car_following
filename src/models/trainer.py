@@ -11,6 +11,9 @@ from src.models.trajectory import Trajectories
 from src.models.reward import RewardNetwork 
 from src.models.mdp import CarFollowingMDP
 from src.models.optimizer import GradientAscentOptimizer
+from src.config import Config
+
+config = Config()
 
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
 
@@ -30,7 +33,11 @@ class Trainer:
     
     def train(
             self,
-            epochs: int = 20,
+            epochs: int,
+            epsilon: float,
+            backward_it: int,
+            forward_it: int,
+
     ) -> RewardNetwork:
 
         expert_svf = svf_from_trajectories(
@@ -40,18 +47,18 @@ class Trainer:
 
         for _ in range(epochs):
 
-            logging.info("Entering Backwardpass")
+            logging.info("Entering Backward Pass")
             policy: torch.tensor = backward_pass(
                 mdp=self.mdp,
                 reward=self.reward_function,
-                epsilon=0.1,
-                max_iterations=20,
+                epsilon=epsilon,
+                max_iterations=backward_it,
             )
             logging.info("Entering Forward Pass")
             expected_svf: np.ndarray = forward_pass(
                 mdp=self.mdp,
                 policy=policy,
-                iterations=100,
+                iterations=forward_it,
             )
             #calculate feature expectation from svf
             grad = np.dot(
