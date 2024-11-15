@@ -14,4 +14,4 @@ class Config:
             "learning_rate":0.05,
             "layers":[30,90,20]
         }
-        self.epochs = 30
+        self.epochs = 15
