@@ -42,7 +42,6 @@ def initial_probabilities_from_trajectories(
 
     return p/len(trajectories.trajectories)
 
-from tqdm import tqdm
 def backward_pass(
         mdp: CarFollowingMDP,
         reward: RewardNetwork,
@@ -61,7 +60,7 @@ def backward_pass(
         logging.info(f'Backward pass {iteration/max_iterations*100:.2f}% complete')
         ValueFunction_t = ValueFunction.clone()
         Q_sa = torch.zeros((n_states, n_actions))
-        for state in tqdm(range(n_states)):
+        for state in range(n_states):
             state_tensor = torch.tensor(mdp._index_to_state(state), dtype=torch.float32)
             state_reward = reward.forward(state_tensor, grad=False).item()
             Q_sa[state] = torch.full((n_actions,), state_reward)
