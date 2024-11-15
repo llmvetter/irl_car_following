@@ -42,31 +42,33 @@ def initial_probabilities_from_trajectories(
 
     return p/len(trajectories.trajectories)
 
+from tqdm import tqdm
 def backward_pass(
         mdp: CarFollowingMDP,
         reward: RewardNetwork,
         epsilon: float = 0.1,
+        discount: float = 0.95,
+        temperature: float = 0.7,
         max_iterations: int = 50,
 ) -> torch.tensor:
     iteration = 0
     n_states = mdp.n_states
     n_actions = mdp.n_actions
-    ValueFunction = torch.full((n_states,), -1000)
+    ValueFunction = torch.full((n_states,), float('-inf'))
 
     while iteration < max_iterations:
         iteration +=1
         logging.info(f'Backward pass {iteration/max_iterations*100:.2f}% complete')
         ValueFunction_t = ValueFunction.clone()
         Q_sa = torch.zeros((n_states, n_actions))
-        for state in range(n_states):
+        for state in tqdm(range(n_states)):
             state_tensor = torch.tensor(mdp._index_to_state(state), dtype=torch.float32)
             state_reward = reward.forward(state_tensor, grad=False).item()
             Q_sa[state] = torch.full((n_actions,), state_reward)
             for action in range(n_actions):
                 for next_state, proba in mdp.get_transitions(state, action):
-                    Q_sa[state][action] += proba*ValueFunction[int(next_state)]
-            action_probabilities = torch.softmax(Q_sa[state], dim=0)
-            ValueFunction[state] = torch.dot(Q_sa[state], action_probabilities)
+                    Q_sa[state][action] += discount*proba*ValueFunction[int(next_state)]
+            ValueFunction[state] = temperature * torch.logsumexp(Q_sa[state] / temperature, dim=0)
 
         if torch.max(torch.abs(ValueFunction - ValueFunction_t)) < epsilon:
             break
