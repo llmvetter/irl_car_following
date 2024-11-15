@@ -2,12 +2,14 @@ class Config:
     def __init__(
             self,
     ) -> None:
-        self.backwardpass = {
+        self.backward_pass = {
             "epsilon": 0.5,
-            "iterations": 50
+            "discount": 0.95,
+            "temperature": 0.7,
+            "iterations": 50,
         }
         self.forward_pass ={
-            "iterations": 100,
+            "iterations": 1000,
             "steps": 2000
         }
         self.reward_network = {

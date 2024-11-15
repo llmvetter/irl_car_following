@@ -44,6 +44,7 @@ for i in range(1,6):
 
 logging.info("Init Trainer")
 trainer = Trainer(
+        config,
         expert_trajectories,
         optimizer,
         reward_function,
@@ -53,9 +54,6 @@ trainer = Trainer(
 logging.info("Init IRL Loop")
 extracted_reward_function, expected_svf = trainer.train(
     epochs=config.epochs,
-    epsilon=config.backwardpass['epsilon'],
-    backward_it=config.backwardpass['iterations'],
-    forward_it=config.forward_pass['iterations'],
 )
 
 torch.save(extracted_reward_function.state_dict(), '/home/h6/leve469a/results/reward_function.pth')
