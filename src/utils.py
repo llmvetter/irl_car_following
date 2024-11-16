@@ -53,7 +53,7 @@ def backward_pass(
     iteration = 0
     n_states = mdp.n_states
     n_actions = mdp.n_actions
-    ValueFunction = torch.full((n_states,), float('-inf'))
+    ValueFunction = torch.full((n_states,), -10)
 
     while iteration < max_iterations:
         iteration +=1
