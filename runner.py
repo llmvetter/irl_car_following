@@ -22,9 +22,9 @@ mdp = CarFollowingMDP(
     v_steps=config.mdp['v_steps'],
     g_steps=config.mdp['g_steps'],
 )
-logging.info(f"Mdp initialized: 
-             n_states = {mdp.n_states},
-             n_action = {mdp.n_actions}.")
+logging.info("Mdp initialized: "
+             f"n_states = {mdp.n_states},"
+             f"n_action = {mdp.n_actions}.")
 
 logging.info("Init Reward Function")
 reward_function = RewardNetwork(
