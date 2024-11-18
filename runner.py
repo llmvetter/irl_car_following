@@ -17,11 +17,11 @@ logging.info(f"loaded config with params: {config.__dict__}")
 
 logging.info("Init MDP")
 mdp = CarFollowingMDP(
-    a_min= -1,
-    a_max= 1.5,
-    a_steps=0.5,
-    v_steps=0.25,
-    g_steps=0.25,
+    a_min= config.mdp['a_min'],
+    a_max= config.mdp['a_max'],
+    a_steps=config.mdp['a_steps'],
+    v_steps=config.mdp['v_steps'],
+    g_steps=config.mdp['g_steps'],
 )
 logging.info("Init Reward Function")
 reward_function = RewardNetwork(
@@ -52,12 +52,12 @@ trainer = Trainer(
 )
 
 logging.info("Init IRL Loop")
-extracted_reward_function, expected_svf = trainer.train(
+extracted_reward_function, policy = trainer.train(
     epochs=config.epochs,
 )
 
 torch.save(extracted_reward_function.state_dict(), '/home/h6/leve469a/results/reward_function.pth')
 logging.info("RewardNetwork has been saved.")
-with open('/home/h6/leve469a/results/expected_svf.pkl', 'wb') as file:
-    pickle.dump(expected_svf, file)
-logging.info("Expected state visitation frequency has been saved.")
+with open('/home/h6/leve469a/results/policy.pkl', 'wb') as file:
+    pickle.dump(policy, file)
+logging.info("Policy has been saved.")

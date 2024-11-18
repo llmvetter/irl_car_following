@@ -35,7 +35,7 @@ class Trainer:
     def train(
             self,
             epochs: int,
-    ) -> Tuple[RewardNetwork, np.ndarray]:
+    ) -> Tuple[RewardNetwork, torch.tensor]:
 
         expert_svf = svf_from_trajectories(
             trajectories=self.trajectories,
@@ -75,4 +75,4 @@ class Trainer:
             
             logging.info(f'Epoch loss: {loss}')
 
-        return self.reward_function, expected_svf
+        return self.reward_function, policy
