@@ -21,6 +21,6 @@ class Config:
         }
         self.reward_network = {
             "learning_rate":0.0005,
-            "layers":[30,90,20]
+            "layers":[50,50,50]
         }
         self.epochs = 8
