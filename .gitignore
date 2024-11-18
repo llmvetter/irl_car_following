@@ -1,3 +1,4 @@
 *.ipynb
 *.pyc
+/results
 sigma_values.py
