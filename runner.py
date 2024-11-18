@@ -15,7 +15,6 @@ logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(
 config = Config()
 logging.info(f"loaded config with params: {config.__dict__}")
 
-logging.info("Init MDP")
 mdp = CarFollowingMDP(
     a_min= config.mdp['a_min'],
     a_max= config.mdp['a_max'],
@@ -23,6 +22,10 @@ mdp = CarFollowingMDP(
     v_steps=config.mdp['v_steps'],
     g_steps=config.mdp['g_steps'],
 )
+logging.info(f"Mdp initialized: 
+             n_states = {mdp.n_states},
+             n_action = {mdp.n_actions}.")
+
 logging.info("Init Reward Function")
 reward_function = RewardNetwork(
     mdp=mdp,
