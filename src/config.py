@@ -2,6 +2,9 @@ class Config:
     def __init__(
             self,
     ) -> None:
+        self.preprocessor = {
+            "speed_treshold":5
+        }
         self.mdp = {
             "a_min":-1.5,
             "a_max":2,
@@ -21,6 +24,6 @@ class Config:
         }
         self.reward_network = {
             "learning_rate":0.0005,
-            "layers":[50,80,50]
+            "layers":[30,90,20]
         }
         self.epochs = 8
