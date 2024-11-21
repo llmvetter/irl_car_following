@@ -42,7 +42,7 @@ class Trainer:
             mdp=self.mdp,
         )
 
-        for _ in range(epochs):
+        for epoch in range(epochs):
 
             logging.info("Entering Backward Pass")
             policy: torch.tensor = backward_pass(
@@ -74,5 +74,6 @@ class Trainer:
             )
             
             logging.info(f'Epoch loss: {loss}')
+            torch.save(self.reward_function.state_dict(), f'/home/h6/leve469a/results/reward_function_{epoch}.pth')
 
         return self.reward_function, policy

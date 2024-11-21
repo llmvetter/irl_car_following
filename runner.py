@@ -59,7 +59,7 @@ extracted_reward_function, policy = trainer.train(
     epochs=config.epochs,
 )
 
-torch.save(extracted_reward_function.state_dict(), '/home/h6/leve469a/results/reward_function.pth')
+torch.save(extracted_reward_function.state_dict(), '/home/h6/leve469a/results/final_reward_function.pth')
 logging.info("RewardNetwork has been saved.")
 with open('/home/h6/leve469a/results/policy.pkl', 'wb') as file:
     pickle.dump(policy, file)
