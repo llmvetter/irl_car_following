@@ -39,7 +39,7 @@ class Analyzer:
         plt.tight_layout()
         plt.show()
     
-    def plot_reward(
+    def plot_reward_function(
             self,
     ):
         state_tensor = torch.tensor(self.mdp.state_space, dtype=torch.float32)
@@ -51,6 +51,24 @@ class Analyzer:
         plt.xlabel('State Index')
         plt.ylabel('Reward_Value')
         plt.title('Plot of Reward Values')
+        plt.show()
+    
+    def plot_reward_heatmap(
+            self,
+    ):
+
+        state_space = self.mdp.state_space
+        state_space_tensor = torch.tensor(state_space, dtype=torch.float32)
+        state_rewards = self.reward_network.forward(state_space_tensor, grad=False).detach().cpu().numpy()
+
+        _, ax = plt.subplots(figsize=(10, 8))
+        scatter = ax.scatter(state_space[:, 0], state_space[:, 1], c=state_rewards, cmap='viridis')
+
+        plt.colorbar(scatter, label='Reward')
+        ax.set_xlabel('Velocity in m/s')
+        ax.set_ylabel('Distance Gap in m')
+        ax.set_title('State Space with Color-coded Rewards')
+
         plt.show()
     
     def plot_trajectory(
