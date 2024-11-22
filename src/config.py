@@ -16,14 +16,14 @@ class Config:
             "epsilon": 0.5,
             "discount": 0.95,
             "temperature": 0.8,
-            "iterations": 70
+            "iterations": 1
         }
         self.forward_pass ={
-            "iterations": 100,
-            "steps": 1500
+            "iterations": 1,
+            "steps": 1000
         }
         self.reward_network = {
-            "learning_rate":0.0005,
-            "layers":[30,90,20]
+            "learning_rate":0.001,
+            "layers":[40,40,40]
         }
-        self.epochs = 5
+        self.epochs = 1
