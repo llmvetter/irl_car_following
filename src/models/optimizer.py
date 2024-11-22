@@ -23,10 +23,9 @@ class GradientAscentOptimizer:
     ) -> float:
 
         states_tensor = torch.tensor(self.mdp.state_space, dtype=torch.float32)
-        rewards = self.reward_network(states_tensor)
-        loss = -torch.sum(gradient * rewards)
+        rewards = self.reward_network(states_tensor).flatten()
 
         self.optimizer.zero_grad()
-        loss.backward()
+        rewards.backward(-gradient)
         self.optimizer.step()
-        return loss.item()
+        return (-gradient*rewards).sum().item()

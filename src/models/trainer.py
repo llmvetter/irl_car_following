@@ -61,9 +61,7 @@ class Trainer:
                 iterations=self.config.forward_pass['iterations'],
             )
             #calculate feature expectation from svf
-            grad = np.dot(
-                (expert_svf - expected_svf), self.mdp.state_space
-            )
+            grad = expert_svf - expected_svf
             logging.info(
                 f'Expected feature expectation: {np.dot(expected_svf, self.mdp.state_space)}'
             )
