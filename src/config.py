@@ -15,15 +15,15 @@ class Config:
         self.backward_pass = {
             "epsilon": 0.5,
             "discount": 0.95,
-            "temperature": 0.8,
-            "iterations": 1
+            "temperature": 0.7,
+            "iterations": 80
         }
         self.forward_pass ={
-            "iterations": 1,
+            "iterations": 100,
             "steps": 1000
         }
         self.reward_network = {
             "learning_rate":0.001,
             "layers":[40,40,40]
         }
-        self.epochs = 1
+        self.epochs = 6
