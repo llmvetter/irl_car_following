@@ -1,13 +1,10 @@
 import numpy as np
 import logging
-from scipy.special import logsumexp
-from scipy import sparse
-from itertools import product
-from scipy import sparse
+import torch
 
 from src.models.mdp import CarFollowingMDP
 from src.models.trajectory import Trajectories
-from src.models.reward import LinearRewardFunction
+from src.models.reward import RewardNetwork
 
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
 
@@ -15,12 +12,13 @@ def svf_from_trajectories(
         trajectories: Trajectories,
         mdp: CarFollowingMDP,
 ) -> np.ndarray:
-    fe = np.zeros(mdp.n_states)
+    svf = np.zeros(mdp.n_states)
     for trajectory in trajectories:
         for state_action_pair in trajectory:
             idx = state_action_pair.state.index
-            fe[idx] += 1
-    return fe/len(trajectories.trajectories)
+            svf[idx] += 1
+    norm_svf = svf/sum(svf)
+    return norm_svf
 
 def terminal_probabilities_from_trajectories(
         trajectories: Trajectories,
@@ -45,70 +43,58 @@ def initial_probabilities_from_trajectories(
     return p/len(trajectories.trajectories)
 
 def backward_pass(
-        mdp: CarFollowingMDP, 
-        reward_func: LinearRewardFunction,
-) -> np.ndarray:
+        mdp: CarFollowingMDP,
+        reward: RewardNetwork,
+        epsilon: float = 0.1,
+        discount: float = 0.95,
+        temperature: float = 0.7,
+        max_iterations: int = 50,
+) -> torch.tensor:
+    iteration = 0
     n_states = mdp.n_states
     n_actions = mdp.n_actions
+    ValueFunction = torch.full((n_states,), -10)
+
+    while iteration < max_iterations:
+        iteration +=1
+        logging.info(f'Backward pass {iteration/max_iterations*100:.2f}% complete')
+        ValueFunction_t = ValueFunction.clone()
+        Q_sa = torch.zeros((n_states, n_actions))
+        for state in range(n_states):
+            state_tensor = torch.tensor(mdp._index_to_state(state), dtype=torch.float32)
+            state_reward = reward.forward(state_tensor, grad=False).item()
+            Q_sa[state] = torch.full((n_actions,), state_reward)
+            for action in range(n_actions):
+                for next_state, proba in mdp.get_transitions(state, action):
+                    Q_sa[state][action] += discount*proba*ValueFunction[int(next_state)]
+            ValueFunction[state] = temperature * torch.logsumexp(Q_sa[state] / temperature, dim=0)
+
+        if torch.max(torch.abs(ValueFunction - ValueFunction_t)) < epsilon:
+            break
     
-    # Precompute rewards
-    reward = np.array([reward_func.get_reward(s) for s in range(n_states)])
+    policy = torch.zeros((n_states, n_actions))
+    for state in range(n_states):
+        for action in range(n_actions):
+            policy[state][action] = torch.exp(Q_sa[state][action]-ValueFunction[state])
+        policy[state] /= torch.sum(policy[state])
+    return policy
 
-    # Backward Pass
-    # init zs (state partition function)
-    log_zs = np.zeros(n_states)
-
-    for i in range(2*n_states):
-        if i % 1000 == 0:
-            logging.info(f"Backwarpass {i/n_states}% complete.")
-        log_za = np.full((n_states, n_actions), -np.inf)
-        for s_from, a in product(range(n_states), range(n_actions)):
-            #sum state value for all possible next state given current state-action pair
-            log_za[s_from, a] = reward[s_from] + logsumexp(np.log(mdp.T[s_from, :, a] + 1e-300) + log_zs)
-        log_zs = logsumexp(log_za, axis=1)
-    p_action = np.exp(log_za - log_zs[:, None])
-    return p_action
-
-def create_sparse_transition_matrix(mdp):
-    n_states = mdp.n_states
-    n_actions = mdp.n_actions
-    T_reshaped = mdp.T.reshape(n_states * n_actions, n_states)
-    T_sparse = sparse.csr_matrix(T_reshaped)
-    
-    return T_sparse
 
 def forward_pass(
         mdp: CarFollowingMDP,
-        p_action: np.ndarray,
+        policy: torch.tensor,
+        iterations: int = 100,
+        steps: int = 2000,
 ) -> np.ndarray:
+    state_visitations = torch.zeros(mdp.n_states)
+    for i in range(iterations):
+        state = torch.randint(0, mdp.n_states, (1,)).item() # TODO: maybe match trajectories
+        for _ in range(steps):
+            state_visitations[state] += 1
+            action = torch.multinomial(policy[state], 1).item()
+            next_state = mdp.step(state, action)
+            state = next_state
+    # Normalize
+    state_visitations /= state_visitations.sum()
 
-    p_initial = np.ones(mdp.n_states) / mdp.n_states
-    T_sparse = create_sparse_transition_matrix(mdp)
-    p_action_sparse = sparse.csr_matrix(p_action)
-    
-    # Initialize d with p_initial
-    d = sparse.csr_matrix(p_initial).T
-    
-    # Small constant to prevent underflow
-    epsilon = 1e-10
-    
-    for t in range(mdp.n_states):
-        # Element-wise multiplication
-        s_a_probs = d.multiply(p_action_sparse)
-        s_a_probs_r = s_a_probs.reshape(1, -1)
-        d_next = s_a_probs_r.dot(T_sparse).T
-        
-        # Convert to dense, add epsilon, and normalize
-        d_dense = d_next.toarray() + epsilon
-        d_dense /= d_dense.sum() + epsilon
-        
-        # Convert back to sparse
-        d = sparse.csr_matrix(d_dense)
-        
-        # Break if d becomes all zeros
-        if d.nnz == 0:
-            print(f"Warning: d became all zeros at iteration {t}")
-            break
-    
-    state_frequencies = d.sum(axis=1).A1
-    return state_frequencies
+    return state_visitations.detach().numpy()

@@ -1,5 +1,7 @@
 import numpy as np
+from typing import Tuple
 import logging
+import torch
 
 from src.utils import (
     forward_pass,
@@ -7,66 +9,69 @@ from src.utils import (
     svf_from_trajectories,
 )
 from src.models.trajectory import Trajectories
-from src.models.reward import LinearRewardFunction 
+from src.models.reward import RewardNetwork 
 from src.models.mdp import CarFollowingMDP
-from src.models.optimizer import GradientDescentOptimizer
+from src.models.optimizer import GradientAscentOptimizer
+from src.config import Config
+
 
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
 
 class Trainer:
     def __init__(
             self,
+            config: Config,
             trajectories: Trajectories,
-            optimizer: GradientDescentOptimizer,
-            reward_function: LinearRewardFunction,
+            optimizer: GradientAscentOptimizer,
+            reward_function: RewardNetwork,
             mdp: CarFollowingMDP,
-            eps=1e-4,
     ) -> None:
-
+        self.config = config
         self.trajectories = trajectories
         self.optimizer = optimizer
         self.reward_function = reward_function
         self.mdp = mdp
-        self.eps= eps
     
     def train(
             self,
-    ) -> np.ndarray:
+            epochs: int,
+    ) -> Tuple[RewardNetwork, torch.tensor]:
 
         expert_svf = svf_from_trajectories(
             trajectories=self.trajectories,
             mdp=self.mdp,
         )
 
-        delta = np.inf
+        for epoch in range(epochs):
 
-        while delta > self.eps:
-            #retain old omega value
-            omega_old = self.optimizer.omega.copy()
-
-            # Set the current weights in the reward function
-            self.reward_function.set_weights(self.optimizer.omega)
-
-            logging.info("Backwardpass")
-            p_action = backward_pass(
+            logging.info("Entering Backward Pass")
+            policy: torch.tensor = backward_pass(
                 mdp=self.mdp,
-                reward_func=self.reward_function,
+                reward=self.reward_function,
+                temperature=self.config.backward_pass['temperature'],
+                discount=self.config.backward_pass['discount'],
+                epsilon=self.config.backward_pass['epsilon'],
+                max_iterations=self.config.backward_pass['iterations'],
             )
-            logging.info("Forward Pass")
-            expected_svf = forward_pass(
+            logging.info("Entering Forward Pass")
+            expected_svf: np.ndarray = forward_pass(
                 mdp=self.mdp,
-                p_action=p_action,
+                policy=policy,
+                steps=self.config.forward_pass['steps'],
+                iterations=self.config.forward_pass['iterations'],
             )
             #calculate feature expectation from svf
-            grad = np.dot((expert_svf - expected_svf), self.mdp.state_space)
+            grad = expert_svf - expected_svf
+            logging.info(
+                f'Expected feature expectation: {np.dot(expected_svf, self.mdp.state_space)}'
+            )
 
-            # perform optimization step and compute delta for convergence
-            omega = self.optimizer.step(grad)
+            # perform optimization step
+            loss = self.optimizer.step(
+                torch.tensor(grad, dtype=torch.float32)
+            )
             
-            # re-compute delta for convergence check
-            delta = np.max(np.abs(omega_old - omega))
-            logging.info(f'gradient computation complete: {delta}')
+            logging.info(f'Epoch loss: {loss}')
+            torch.save(self.reward_function.state_dict(), f'/home/h6/leve469a/results/reward_function_{epoch}.pth')
 
-        # Set final weights and return the reward function
-        self.reward_function.set_weights(omega)
-        return self.reward_function.weights
+        return self.reward_function, policy

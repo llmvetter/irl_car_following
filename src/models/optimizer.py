@@ -1,18 +1,31 @@
+import torch
 import numpy as np
+import torch.optim as optim
 
-class GradientDescentOptimizer:
-#have to use ascent optimizer i think?
+from src.models.reward import RewardNetwork
+from src.models.mdp import CarFollowingMDP
+
+class GradientAscentOptimizer:
+    
     def __init__(
             self,
-            omega: np.ndarray,
-            learning_rate: float = 0.01,
-    ) -> None:
-        self.learning_rate = learning_rate
-        self.omega = omega
+            reward_network: RewardNetwork,
+            mdp: CarFollowingMDP,
+            lr: float = 1e-3
+    ):
+        self.reward_network = reward_network
+        self.mdp = mdp
+        self.optimizer = optim.Adam(self.reward_network.net.parameters(), lr=lr)
 
     def step(
             self,
-            gradient: float,
-    ) -> None:
-        self.omega += self.learning_rate * gradient
-        return self.omega
+            gradient: torch.tensor,
+    ) -> float:
+
+        states_tensor = torch.tensor(self.mdp.state_space, dtype=torch.float32)
+        rewards = self.reward_network(states_tensor).flatten()
+
+        self.optimizer.zero_grad()
+        rewards.backward(-gradient)
+        self.optimizer.step()
+        return (-gradient*rewards).sum().item()

@@ -1,30 +1,35 @@
-import numpy as np
+import torch
+import torch.nn as nn
 
 from src.models.mdp import CarFollowingMDP
 
-class LinearRewardFunction:
+class RewardNetwork(nn.Module):
     def __init__(
-            self, 
+            self,
             mdp: CarFollowingMDP,
-            num_features: int = 2,
-    ) -> None:  
+            layers: list,
+    ):
+        super(RewardNetwork, self).__init__()
         self.mdp = mdp
-        self.num_features = num_features
-        self.std_features = np.array(np.std(self.mdp.v_space), np.std(self.mdp.g_space))
-        self.mean_features = np.array(np.mean(self.mdp.v_space), np.mean(self.mdp.g_space))
-        self.weights: np.ndarray = None
+        self.net = nn.Sequential(
+            nn.Linear(2, layers[0]),
+            nn.ReLU(),
+            nn.Linear(layers[0], layers[1]),
+            nn.ReLU(),
+            nn.Linear(layers[1], layers[2]),
+            nn.ReLU(),
+            nn.Linear(layers[2], 1),
+            nn.Softplus(),
+        )
 
-    def set_weights(self, weights) -> None:
-        self.weights = weights
+    def forward(
+            self,
+            state_tensor: torch.tensor,
+            grad: bool = True,
+    ) -> torch.tensor:
+        if grad:
+            return self.net(state_tensor)
+        else:
+            with torch.no_grad():
+                return self.net(state_tensor)
 
-    def normalize_state_features(self, state: tuple) -> np.ndarray:
-        return (np.array(state) - self.mean_features) / self.std_features
-
-    def get_reward(
-            self, 
-            state: int,
-    ) -> np.ndarray:
-        state = self.mdp._index_to_state(state)
-        state_nomalized = self.normalize_state_features(state)
-        raw_reward = np.dot(self.weights, np.array(state_nomalized))
-        return raw_reward
