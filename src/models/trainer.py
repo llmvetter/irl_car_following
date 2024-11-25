@@ -63,7 +63,7 @@ class Trainer:
             #calculate feature expectation from svf
             grad = expert_svf - expected_svf
             logging.info(
-                f'Expected feature expectation: {np.dot(expected_svf, self.mdp.state_space)}'
+                f'Expected feature counts: {np.dot(expected_svf, self.mdp.state_space)}'
             )
 
             # perform optimization step
