@@ -9,8 +9,8 @@ class Config:
             "a_min":-1.5,
             "a_max":2,
             "a_steps":0.75,
-            "v_steps":0.25,
-            "g_steps":0.25
+            "v_steps":0.2,
+            "g_steps":0.2
         }
         self.backward_pass = {
             "epsilon": 0.5,

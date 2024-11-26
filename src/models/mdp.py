@@ -80,9 +80,10 @@ class CarFollowingMDP:
         v_from, g_from = self._index_to_state(s_idx_from)
         action = self._index_to_action(a_idx)
         v_next = max(min(v_from + action * self.delta_t, self.v_max), 0)
+        relative_speed = np.random.normal(0, 0.8628)
 
         if v_next != 0:
-            g_next_mean = g_from-(v_from*self.delta_t)+(0.5*action*self.delta_t**2)
+            g_next_mean = g_from-(relative_speed*self.delta_t)-(0.5*action*self.delta_t**2)
         else:
             g_next_mean = g_from
 
