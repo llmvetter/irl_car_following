@@ -3,7 +3,7 @@ class Config:
             self,
     ) -> None:
         self.preprocessor = {
-            "speed_treshold":4
+            "speed_treshold":3
         }
         self.mdp = {
             "a_min":-1.5,
@@ -15,7 +15,7 @@ class Config:
         self.backward_pass = {
             "epsilon": 0.5,
             "discount": 0.97,
-            "temperature": 1,
+            "temperature": 0.7,
             "iterations": 80
         }
         self.forward_pass ={
@@ -23,7 +23,7 @@ class Config:
             "steps": 1000
         }
         self.reward_network = {
-            "learning_rate":0.01,
+            "learning_rate":0.001,
             "layers":[100,100,100]
         }
         self.epochs = 5

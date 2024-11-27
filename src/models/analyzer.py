@@ -24,6 +24,8 @@ class Analyzer:
             rows, cols = 80, 160
         if len(data)==32000:
             rows, cols = 160, 200
+        if len(data)==20000:
+            rows, cols = 100, 200
 
         data_2d = data.reshape(rows, cols)
         _, ax = plt.subplots(figsize=(12, 8))
