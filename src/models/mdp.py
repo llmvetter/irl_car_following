@@ -83,7 +83,7 @@ class CarFollowingMDP:
         relative_speed = np.random.normal(0, 0.8628)
 
         if v_next != 0:
-            g_next_mean = g_from-(relative_speed*self.delta_t)-(0.5*action*self.delta_t**2)
+            g_next_mean = g_from-(relative_speed*self.delta_t)-(0.5*action*self.delta_t**2) #ego(v) - lead(v)
         else:
             g_next_mean = g_from
 
