@@ -82,7 +82,6 @@ class Analyzer:
         velocity = np.zeros(steps)
         distance_gap = np.zeros(steps)
         timesteps = np.arange(steps)
-
         state = torch.randint(0, self.mdp.n_states, (1,)).item()
         print(f'initial state: {state}, with features: {self.mdp._index_to_state(state)}')
         for t in range(steps):

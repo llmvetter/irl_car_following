@@ -1,6 +1,6 @@
 import logging
 import numpy as np
-from scipy.stats import norm
+from scipy import stats
 
 
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
@@ -80,44 +80,32 @@ class CarFollowingMDP:
         v_from, g_from = self._index_to_state(s_idx_from)
         action = self._index_to_action(a_idx)
         v_next = max(min(v_from + action * self.delta_t, self.v_max), 0)
-        relative_speed = np.random.normal(0, 0.8628)
-
+        std_g_next = 0.85 * self.delta_t
+        
         if v_next != 0:
-            g_next_mean = g_from-(relative_speed*self.delta_t)-(0.5*action*self.delta_t**2) #ego(v) - lead(v)
+            mean_g_next = g_from - (0.5 * action * self.delta_t**2)
         else:
-            g_next_mean = g_from
+            mean_g_next = g_from
 
-        # discard very unlikely transitions
-        lower_bound = max(0, g_next_mean - 3*self.g_sigma)
-        upper_bound = min(self.g_max, g_next_mean + 3*self.g_sigma)
+        
+        g_next_dist = stats.norm(loc=mean_g_next, scale=std_g_next)
 
+        bins = self.g_space
+        bin_probs = np.diff(g_next_dist.cdf(bins))
+        non_empty_indices = np.where(bin_probs > proba_threshold)[0]
+        filtered_probs = bin_probs[non_empty_indices]
+        filtered_probs = bin_probs[non_empty_indices]
+        filtered_probs /= filtered_probs.sum()
         significant_bins = []
-        probabilities = []
-
-        for i in range(len(self.g_space) - 1):
-            bin_start = self.g_space[i]
-            bin_end = self.g_space[i + 1]
-
-            if bin_start > upper_bound or bin_end < lower_bound:
-                continue
-            
-            prob = norm.cdf(
-                bin_end, g_next_mean, self.g_sigma
-                )-norm.cdf(bin_start, g_next_mean, self.g_sigma)
-            
-            if prob > proba_threshold:
-                probabilities.append(prob)
-                significant_bins.append((v_next, (bin_start + bin_end) / 2))
-                
-        # normalize
-        probabilities = np.array(probabilities)
-        probabilities /= np.sum(probabilities)
+        
+        for i in non_empty_indices:
+            bin_start = bins[i]
+            significant_bins.append((v_next, bin_start)) #this mapping might explain downtrend behaviour
 
         next_state_indices = [self._state_to_index(state) for state in significant_bins]
-
-        # Combine probabilities for duplicate indices
         unique_indices, unique_probs = np.unique(next_state_indices, return_inverse=True)
-        combined_probs = np.bincount(unique_probs, weights=probabilities)
+        
+        combined_probs = np.bincount(unique_probs, weights=filtered_probs)
 
         return np.column_stack((unique_indices, combined_probs))
 
