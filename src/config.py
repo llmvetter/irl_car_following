@@ -6,11 +6,11 @@ class Config:
             "speed_treshold":3
         }
         self.mdp = {
-            "a_min":-3,
-            "a_max":3,
+            "a_min":-1.5,
+            "a_max":2,
             "a_steps":0.75,
             "v_steps":0.2,
-            "g_steps":0.1
+            "g_steps":0.2
         }
         self.backward_pass = {
             "epsilon": 0.5,

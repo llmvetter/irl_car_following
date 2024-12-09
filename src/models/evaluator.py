@@ -35,10 +35,10 @@ class Evaluator:
             self,
             initial_speed: float,
             num_steps: int = 1000,
-            max_speed_change: float = 0.25,
-            min_speed: int = 3,
-            max_speed: int = 15,
-            window_size: int = 50,
+            max_speed_change: float = 0.2,
+            min_speed: int = 6,
+            max_speed: int = 12,
+            window_size: int = 100,
     ):
         speeds = [initial_speed]
         smoothed_speeds = [initial_speed]
