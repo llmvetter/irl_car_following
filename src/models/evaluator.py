@@ -35,9 +35,9 @@ class Evaluator:
             self,
             initial_speed: float,
             num_steps: int = 1000,
-            max_speed_change: float = 0.3,
+            max_speed_change: float = 0.25,
             min_speed: int = 3,
-            max_speed: int = 18,
+            max_speed: int = 15,
             window_size: int = 50,
     ):
         speeds = [initial_speed]
@@ -57,15 +57,12 @@ class Evaluator:
     
     def evaluate(
             self,
-            v_lead_init,
+            leader_trajectory,
             v_ego_init,
             d_ego_init,
     ) -> None:
         follower_trajectory = []
         ego_vehicle_state = tuple([v_ego_init, d_ego_init])
-        leader_trajectory = self.random_trajectory(
-            initial_speed = v_lead_init,
-        )
         for step in range(len(leader_trajectory) - 1):
             next_state = self.policy_infere(
                 ego_vehicle_state=ego_vehicle_state,
@@ -80,7 +77,7 @@ class Evaluator:
         follower_velocity = [item[0] for item in follower_trajectory]
         distance_gap = [item[1] for item in follower_trajectory]
         time_steps = range(len(leader_trajectory))
-
+        qt = [item[1]/item[0] for item in follower_trajectory]
 
         plt.figure(figsize=(10, 6))
         plt.plot(time_steps, follower_velocity, label='follower velocity', marker='o')
@@ -96,6 +93,14 @@ class Evaluator:
         plt.xlabel('Time steps in 0.1s')
         plt.ylabel('Distance gap in m')
         plt.title('Distance gap to lead vehicle')
+        plt.legend()
+        plt.grid(True)
+
+        plt.figure(figsize=(10, 6))
+        plt.plot(time_steps, qt, label='distance gap/velocity', marker='o')
+        plt.xlabel('Time steps in 0.1s')
+        plt.ylabel('distance gap/velocity in s')
+        plt.title('Quotient of distance gap/velocity')
         plt.legend()
         plt.grid(True)
 
