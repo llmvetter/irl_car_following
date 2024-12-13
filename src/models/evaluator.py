@@ -74,14 +74,14 @@ class Evaluator:
         dummy_variable = follower_trajectory[-1]
         follower_trajectory.append(dummy_variable)
 
-        follower_velocity = [item[0] for item in follower_trajectory]
-        distance_gap = [item[1] for item in follower_trajectory]
+        follower_velocity = np.array([item[0] for item in follower_trajectory])
+        distance_gap = np.array([item[1] for item in follower_trajectory])
         time_steps = range(len(leader_trajectory))
-        qt = [item[1]/item[0] for item in follower_trajectory]
+        qt = distance_gap/follower_velocity
 
         plt.figure(figsize=(10, 6))
-        plt.plot(time_steps, follower_velocity, label='follower velocity', marker='o')
-        plt.plot(time_steps, leader_trajectory, label='leader velocity', marker='o')
+        plt.plot(time_steps, follower_velocity, label='follower velocity', marker='o', markersize=5)
+        plt.plot(time_steps, leader_trajectory, label='leader velocity', marker='o', markersize=5)
         plt.xlabel('Time Steps in 0.1s')
         plt.ylabel('Velocity in m/s')
         plt.title('Velocity over time')
@@ -89,7 +89,7 @@ class Evaluator:
         plt.grid(True)
 
         plt.figure(figsize=(10, 6))
-        plt.plot(time_steps, distance_gap, label='distance gap', marker='o')
+        plt.plot(time_steps, distance_gap, label='distance gap', marker='o', markersize=5)
         plt.xlabel('Time steps in 0.1s')
         plt.ylabel('Distance gap in m')
         plt.title('Distance gap to lead vehicle')
@@ -97,7 +97,7 @@ class Evaluator:
         plt.grid(True)
 
         plt.figure(figsize=(10, 6))
-        plt.plot(time_steps, qt, label='distance gap/velocity', marker='o')
+        plt.plot(time_steps, qt, label='distance gap/velocity', marker='o', markersize=5)
         plt.xlabel('Time steps in 0.1s')
         plt.ylabel('distance gap/velocity in s')
         plt.title('Quotient of distance gap/velocity')

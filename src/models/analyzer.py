@@ -15,31 +15,6 @@ class Analyzer:
     ):
         self.reward_network = reward
         self.mdp = mdp
-    
-    def plot_heatmap(
-            self,
-            data: np.ndarray,
-    ):
-        if len(data)==12800:
-            rows, cols = 80, 160
-        if len(data)==32000:
-            rows, cols = 160, 200
-        if len(data)==20000:
-            rows, cols = 100, 200
-
-        data_2d = data.reshape(rows, cols)
-        _, ax = plt.subplots(figsize=(12, 8))
-        amplified_data = np.power(data_2d, 0.3)
-        im = ax.imshow(amplified_data, cmap='coolwarm', aspect='auto')
-        cbar = plt.colorbar(im, label='Normalized SVF')
-        cbar.set_ticks([amplified_data.min(), amplified_data.max()])
-        cbar.set_ticklabels([f'{data_2d.min():.2e}', f'{data_2d.max():.2e}'])
-
-        plt.title('State visitation heatmap')
-        plt.xlabel('Column Index')
-        plt.ylabel('Row Index')
-        plt.tight_layout()
-        plt.show()
 
     def plot_reward_function(self):
         state_tensor = torch.tensor(self.mdp.state_space, dtype=torch.float32)
@@ -82,7 +57,6 @@ class Analyzer:
         plt.title('Reward Value vs Quotient with Fixed Velocities')
         plt.grid(True)
         plt.legend()
-        plt.savefig('C:/Users/lenna/Documents/IRL/car_following/results/07/plots/reward_qt.pdf')
         plt.show()
 
         for v, reward, quotient in zip(fixed_velocities, max_rewards, max_quotients):
@@ -106,10 +80,11 @@ class Analyzer:
         plt.savefig('C:/Users/lenna/Documents/IRL/car_following/results/07/plots/reward_heatmap.pdf')
         plt.show()
     
-    def plot_trajectory(
+    def sample_trajectory(
         self,
         policy: torch.tensor,
         steps: int = 2000,
+        plot: bool = False,
     ) -> np.ndarray:
 
         velocity = np.zeros(steps)
@@ -125,22 +100,23 @@ class Analyzer:
             action = torch.multinomial(policy[state], 1).item()
             next_state = self.mdp.step(state, action)
             state = next_state
+        if plot:
+            plt.figure(figsize=(12, 8))
 
-        plt.figure(figsize=(12, 8))
+            plt.subplot(2, 1, 1)
+            plt.plot(timesteps, velocity, label='Velocity')
+            plt.xlabel('Timestep')
+            plt.ylabel('Velocity in m/s')
+            plt.title('Velocity over trajectory')
+            plt.legend()
 
-        plt.subplot(2, 1, 1)
-        plt.plot(timesteps, velocity, label='Velocity')
-        plt.xlabel('Timestep')
-        plt.ylabel('Velocity in m/s')
-        plt.title('Velocity over trajectory')
-        plt.legend()
+            plt.subplot(2, 1, 2)
+            plt.plot(timesteps, distance_gap, label='Distance Gap')
+            plt.xlabel('Timestep')
+            plt.ylabel('Distance Gap in m')
+            plt.title('Distance Gap over trajectory')
+            plt.legend()
 
-        plt.subplot(2, 1, 2)
-        plt.plot(timesteps, distance_gap, label='Distance Gap')
-        plt.xlabel('Timestep')
-        plt.ylabel('Distance Gap in m')
-        plt.title('Distance Gap over trajectory')
-        plt.legend()
-
-        plt.tight_layout()
-        plt.show()
+            plt.tight_layout()
+            plt.show()
+        return list(zip(velocity, distance_gap))
