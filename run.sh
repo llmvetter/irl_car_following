@@ -9,9 +9,10 @@
 #SBATCH --error="/home/leve469a/myjob-%J.out"
 #SBATCH --output="/home/leve469a/myjob-%J.out"
 
-ml purge 
+ml purge
+ml release/24.04 GCCcore/11.3.0
+ml Python/3.10.4
 
-ml release/24.04  GCC/13.2.0 OpenMPI/4.1.6 SciPy-bundle/2023.11
-ml PyTorch/2.1.2
+source /home/h6/leve469a/IQ-Learn/.venv/bin/activate
 
 srun python /home/leve469a/car_following/runner.py
