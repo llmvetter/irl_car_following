@@ -47,7 +47,7 @@ optimizer = GradientAscentOptimizer(
 )
 
 logging.info("Loading Trajectories")
-expert_trajectories = MilanoPreprocessor(mdp=mdp).load(path=config['dataset_path'])
+expert_trajectories = MilanoPreprocessor(mdp=mdp).load(path=config.dataset_path)
 
 logging.info("Init Trainer")
 trainer = Trainer(
