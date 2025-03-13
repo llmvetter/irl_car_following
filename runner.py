@@ -23,7 +23,7 @@ gym.register(
 
 mdp = gym.make(
     id="CarFollowing",
-    dataset_path=config['dataset_path'],
+    dataset_path=config.dataset_path,
     granularity=0.5,
     actions= [-5, -3, -1.5, -0.8, -0.4, -0.2, 0, 0.2, 0.4, 0.8, 1.5, 3, 5],
     )
