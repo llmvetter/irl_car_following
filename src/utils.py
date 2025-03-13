@@ -20,28 +20,6 @@ def svf_from_trajectories(
     norm_svf = svf/sum(svf)
     return norm_svf
 
-def terminal_probabilities_from_trajectories(
-        trajectories: Trajectories,
-        n_states: int,
-) -> np.ndarray:
-    p = np.zeros(n_states)
-    for trajectory in trajectories:
-        terminal_state = trajectory.trajectory[-1].state.index
-        p[terminal_state] += 1.0
-
-    return p/len(trajectories.trajectories)
-
-def initial_probabilities_from_trajectories(
-        trajectories: Trajectories,
-        n_states: int,
-) -> np.ndarray:
-    p = np.zeros(n_states)
-    for trajectory in trajectories:
-        initial_state = trajectory.trajectory[0].state.index
-        p[initial_state] += 1.0
-
-    return p/len(trajectories.trajectories)
-
 def backward_pass(
         mdp: CarFollowingMDP,
         reward: RewardNetwork,

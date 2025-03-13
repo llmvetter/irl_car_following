@@ -2,12 +2,13 @@ import torch
 import logging
 import pickle
 
+import gymnasium as gym
+
 from src.models.trainer import Trainer
-from src.models.trajectory import Trajectories
 from src.models.optimizer import GradientAscentOptimizer
 from src.models.reward import RewardNetwork
-from src.models.preprocessor import Preprocessor
-from src.models.mdp import CarFollowingMDP
+from src.models.preprocessor import MilanoPreprocessor
+from src.models.env import CarFollowingEnv
 from src.config import Config
 
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
@@ -15,13 +16,20 @@ logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(
 config = Config()
 logging.info(f"loaded config with params: {config.__dict__}")
 
-mdp = CarFollowingMDP(
-    a_min= config.mdp['a_min'],
-    a_max= config.mdp['a_max'],
-    a_steps=config.mdp['a_steps'],
-    v_steps=config.mdp['v_steps'],
-    g_steps=config.mdp['g_steps'],
+gym.register(
+    id="CarFollowing",
+    entry_point=CarFollowingEnv,
 )
+
+mdp = gym.make(
+    id="CarFollowing",
+    dataset_path=config['dataset_path'],
+    granularity=0.5,
+    actions= [-5, -3, -1.5, -0.8, -0.4, -0.2, 0, 0.2, 0.4, 0.8, 1.5, 3, 5],
+    )
+mdp = mdp.unwrapped
+mdp.reset()
+
 logging.info("Mdp initialized: "
              f"n_states = {mdp.n_states},"
              f"n_action = {mdp.n_actions}.")
@@ -39,11 +47,7 @@ optimizer = GradientAscentOptimizer(
 )
 
 logging.info("Loading Trajectories")
-expert_trajectories = Trajectories([])
-for i in range(1,6):
-    path = f"/home/h6/leve469a/data/TrajData_Punzo_Napoli/drivetest{i}.FCdata"
-    trajs = Preprocessor(mdp=mdp).load(path=path)
-    expert_trajectories += trajs
+expert_trajectories = MilanoPreprocessor(mdp=mdp).load(path=config['dataset_path'])
 
 logging.info("Init Trainer")
 trainer = Trainer(

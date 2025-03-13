@@ -12,7 +12,7 @@ class RewardNetwork(nn.Module):
         super(RewardNetwork, self).__init__()
         self.mdp = mdp
         self.net = nn.Sequential(
-            nn.Linear(2, layers[0]),
+            nn.Linear(3, layers[0]),
             nn.ReLU(),
             nn.Linear(layers[0], layers[1]),
             nn.ReLU(),

@@ -52,9 +52,9 @@ class Analyzer:
                 
                 plt.scatter(max_quotient, max_reward, s=50, c=color, edgecolors='black', linewidth=2)
 
-        plt.xlabel('Quotient (distance_gap/velocity)')
-        plt.ylabel('Reward Value')
-        plt.title('Reward Value vs Quotient with Fixed Velocities')
+        plt.xlabel('Time Headway q in s')
+        plt.ylabel('Reward Value r')
+        plt.title('Reward Values for Time Headway at Fixed Velocities')
         plt.grid(True)
         plt.legend()
         plt.show()
@@ -71,12 +71,12 @@ class Analyzer:
         state_rewards = self.reward_network.forward(state_space_tensor, grad=False).detach().cpu().numpy()
 
         _, ax = plt.subplots(figsize=(10, 8))
-        scatter = ax.scatter(state_space[:, 0], state_space[:, 1], c=state_rewards, cmap='viridis')
+        scatter = ax.scatter(state_space[:, 1], state_space[:, 0], c=state_rewards, cmap='viridis')
 
         plt.colorbar(scatter, label='Reward')
-        ax.set_xlabel('Velocity in m/s')
-        ax.set_ylabel('Distance Gap in m')
-        ax.set_title('State Space with Color-coded Rewards')
+        ax.set_xlabel('Distance Gap g in m')
+        ax.set_ylabel('Velocity v in m/s')
+        ax.set_title('Reward heatmap over state space')
         plt.savefig('C:/Users/lenna/Documents/IRL/car_following/results/07/plots/reward_heatmap.pdf')
         plt.show()
     

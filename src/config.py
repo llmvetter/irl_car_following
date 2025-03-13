@@ -5,12 +5,13 @@ class Config:
         self.preprocessor = {
             "speed_treshold":3
         }
+        self.dataset_path = 'C:/Users/lenna/Documents/IRL/IQ-Learn/src/dataset/LF_data-2e5.csv'
         self.mdp = {
-            "a_min":-1.5,
-            "a_max":2,
-            "a_steps":0.75,
-            "v_steps":0.2,
-            "g_steps":0.2
+            "actions": [-5, -3, -1.5, -0.8, -0.4, -0.2, 0, 0.2, 0.4, 0.8, 1.5, 3, 5],
+            "max_speed": 30,
+            "max_distance": 100,
+            "max_rel_speed": 75,
+            "granularity": 1.0
         }
         self.backward_pass = {
             "epsilon": 0.5,
