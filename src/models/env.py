@@ -57,6 +57,9 @@ class CarFollowingEnv(gym.Env):
         self.state = None
         self.index = None
 
+        # Init transition matrix
+        self.T = np.zeros((self.n_states, self.n_actions), dtype=int)
+
     def reset(
             self, seed: Optional[int] = None,
             options: Optional[dict] = None,
@@ -118,17 +121,14 @@ class CarFollowingEnv(gym.Env):
 
         return self._get_obs(), reward, terminated, truncated, self._get_info()
     
-    def get_transitions(
-            self, 
-            s_idx_from: int,
-            a_idx: int,
-            proba_threshold: float = 0.001,
-    ) -> np.ndarray:
-
-        state = self.index_to_state[s_idx_from]
-        self.state = state
-        next_state, reward, terminated, truncated, info = self.step(action=a_idx)
-        return np.array([[info['index'], 1.0]])
+    def compute_transitions(self):
+        for state_idx in range(self.n_states):
+            for action_idx in range(self.n_actions):
+                self.reset()
+                state = self._index_to_state(state_idx)
+                self.state = state
+                next_state, reward, terminated, truncated, info = self.step(action_idx)
+                self.T[state_idx, action_idx] = info['index']
     
     def _get_obs(self):
         """Return the current observation (state)."""

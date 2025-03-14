@@ -57,6 +57,38 @@ def backward_pass(
         policy[state] /= torch.sum(policy[state])
     return policy
 
+def value_iteration(
+        mdp: CarFollowingMDP,
+        reward: RewardNetwork,
+        epsilon: float = 0.1,
+        discount: float = 0.95,
+        temperature: float = 0.7,
+        max_iterations: int = 50,
+) -> torch.tensor:
+
+    V = np.zeros(mdp.n_states)
+    Q = np.zeros((mdp.n_states, mdp.n_actions))
+    R = reward.forward(torch.from_numpy(mdp.state_grid).float(), grad=False).numpy()
+
+    for iteration in range(max_iterations):
+        # Compute Q-values: Q[s, a] = reward[s, a] + γ * V[next_state]
+        Q = R + discount * V[mdp.T]
+        Q_tensor = torch.tensor(Q, dtype=torch.float32)
+
+        # Soft value update: V[s] = τ * logsumexp(Q(s, a) / τ)
+        V_new = temperature * torch.logsumexp(Q_tensor / temperature, dim=1).numpy()
+
+        # Check for convergence
+        if np.max(np.abs(V_new - V)) < epsilon:
+            print(f'Converged after {iteration} iterations')
+            break
+
+        V = V_new  # Update value function
+    Q_tensor = torch.tensor(Q, dtype=torch.float32)
+    policy = torch.zeros((mdp.n_states, mdp.n_actions))
+    policy = torch.exp(Q_tensor - V[:, None])  # Broadcast subtraction
+    policy /= policy.sum(dim=1, keepdim=True)  # Normalize across actions
+    return policy
 
 def forward_pass(
         mdp: CarFollowingMDP,

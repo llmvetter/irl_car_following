@@ -5,12 +5,12 @@ import torch
 
 from src.utils import (
     forward_pass,
-    backward_pass,
+    value_iteration,
     svf_from_trajectories,
 )
 from src.models.trajectory import Trajectories
 from src.models.reward import RewardNetwork 
-from src.models.mdp import CarFollowingMDP
+from src.models.env import CarFollowingEnv
 from src.models.optimizer import GradientAscentOptimizer
 from src.config import Config
 
@@ -24,7 +24,7 @@ class Trainer:
             trajectories: Trajectories,
             optimizer: GradientAscentOptimizer,
             reward_function: RewardNetwork,
-            mdp: CarFollowingMDP,
+            mdp: CarFollowingEnv,
     ) -> None:
         self.config = config
         self.trajectories = trajectories
@@ -37,20 +37,22 @@ class Trainer:
             epochs: int,
     ) -> Tuple[RewardNetwork, torch.tensor]:
 
+        self.mdp.compute_transitions()
+
         expert_svf = svf_from_trajectories(
             trajectories=self.trajectories,
             mdp=self.mdp,
         )
 
         for epoch in range(epochs):
-
+            
             logging.info("Entering Backward Pass")
-            policy: torch.tensor = backward_pass(
+            policy: torch.tensor = value_iteration(
                 mdp=self.mdp,
                 reward=self.reward_function,
-                temperature=self.config.backward_pass['temperature'],
-                discount=self.config.backward_pass['discount'],
                 epsilon=self.config.backward_pass['epsilon'],
+                discount=self.config.backward_pass['discount'],
+                temperature=self.config.backward_pass['temperature'],
                 max_iterations=self.config.backward_pass['iterations'],
             )
             logging.info("Entering Forward Pass")
