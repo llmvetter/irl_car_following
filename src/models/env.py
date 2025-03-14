@@ -61,7 +61,8 @@ class CarFollowingEnv(gym.Env):
         self.T = np.zeros((self.n_states, self.n_actions), dtype=int)
 
     def reset(
-            self, seed: Optional[int] = None,
+            self,
+            seed: Optional[int] = None,
             options: Optional[dict] = None,
     ) -> tuple[np.array, dict[str, Any]]:
         """Reset the environment to an initial state."""
@@ -81,6 +82,7 @@ class CarFollowingEnv(gym.Env):
             self,
             action: int,
             lead_speed: Optional[float] = None,
+            determinsitic: bool = True,
     ) -> None:
         """Take an action and return the next state, reward, done flag, and additional info."""
         ### RELATIVE SPEED = V_LEAD - V_FOLLOW ###
@@ -94,10 +96,17 @@ class CarFollowingEnv(gym.Env):
         # gap transition
         if lead_speed:
             relative_speed = lead_speed - ego_speed
-            next_distance_gap = distance_to_lead + (relative_speed*self.delta_t) - (0.5*action*self.delta_t**2) #ego(v) - lead(v)
+            next_distance_gap = distance_to_lead + (relative_speed*self.delta_t) - (0.5*action*self.delta_t**2)
+            # relative speed transition
             next_relative_speed = lead_speed - next_ego_speed
+
+        elif determinsitic is True:
+            next_distance_gap = distance_to_lead + (relative_speed*self.delta_t) - (0.5*action*self.delta_t**2)
+            # relative speed transition
+            next_relative_speed = relative_speed - (acceleration*self.delta_t)
+            
         else:
-            next_distance_gap = distance_to_lead + (relative_speed*self.delta_t) - (0.5*action*self.delta_t**2) #ego(v) - lead(v)
+            next_distance_gap = distance_to_lead + (relative_speed*self.delta_t) - (0.5*action*self.delta_t**2)
             # relative speed transition
             next_relative_speed = self.simulator.smooth_relative_speed(relative_speed)
 
@@ -121,7 +130,7 @@ class CarFollowingEnv(gym.Env):
 
         return self._get_obs(), reward, terminated, truncated, self._get_info()
     
-    def compute_transitions(self):
+    def compute_transitions(self) -> None:
         for state_idx in range(self.n_states):
             for action_idx in range(self.n_actions):
                 self.reset()

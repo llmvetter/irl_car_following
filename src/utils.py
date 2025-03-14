@@ -90,6 +90,30 @@ def value_iteration(
     policy /= policy.sum(dim=1, keepdim=True)  # Normalize across actions
     return policy
 
+def rollout(
+    mdp: CarFollowingMDP,
+    policy: torch.tensor,
+    iterations: int = 100,
+    steps: int = 2000,
+) -> np.ndarray:
+
+    state_visitations = torch.zeros(mdp.n_states)
+    for i in range(50):
+        state = torch.randint(0, mdp.n_states, (1,)).item() # TODO: maybe match trajectories
+        for _ in range(1000):
+            state_visitations[state] += 1
+            action = torch.multinomial(policy[state], 1).item()
+            next_state, reward, terminated, truncated, info = mdp.step(
+                action=action,
+                determinsitic=False,
+            )
+            next_state_index = info['index']
+            state = next_state_index
+    # Normalize
+    state_visitations /= state_visitations.sum()
+
+    return state_visitations.detach().numpy()
+
 def forward_pass(
         mdp: CarFollowingMDP,
         policy: torch.tensor,
@@ -102,7 +126,7 @@ def forward_pass(
         for _ in range(steps):
             state_visitations[state] += 1
             action = torch.multinomial(policy[state], 1).item()
-            next_state = mdp.step(state, action)
+            next_state = mdp.step(state, action, deterministic=False)
             state = next_state
     # Normalize
     state_visitations /= state_visitations.sum()

@@ -4,7 +4,7 @@ import logging
 import torch
 
 from src.utils import (
-    forward_pass,
+    rollout,
     value_iteration,
     svf_from_trajectories,
 )
@@ -56,7 +56,7 @@ class Trainer:
                 max_iterations=self.config.backward_pass['iterations'],
             )
             logging.info("Entering Forward Pass")
-            expected_svf: np.ndarray = forward_pass(
+            expected_svf: np.ndarray = rollout(
                 mdp=self.mdp,
                 policy=policy,
                 steps=self.config.forward_pass['steps'],
@@ -65,7 +65,7 @@ class Trainer:
             #calculate feature expectation from svf
             grad = expert_svf - expected_svf
             logging.info(
-                f'Expected feature counts: {np.dot(expected_svf, self.mdp.state_space)}'
+                f'Expected feature counts: {np.dot(expected_svf, self.mdp.state_grid)}'
             )
 
             # perform optimization step
