@@ -3,7 +3,7 @@ class Config:
             self,
     ) -> None:
         self.preprocessor = {
-            "speed_treshold":3
+            "speed_treshold":2
         }
         self.dataset_path = '/home/h6/leve469a/IQ-Learn/data/LF_data-2e5.csv'
         self.mdp = {
@@ -11,7 +11,7 @@ class Config:
             "max_speed": 30,
             "max_distance": 100,
             "max_rel_speed": 30,
-            "granularity": 1.0
+            "granularity": 0.1
         }
         self.backward_pass = {
             "epsilon": 0.5,
@@ -25,6 +25,6 @@ class Config:
         }
         self.reward_network = {
             "learning_rate":0.001,
-            "layers":[100,100,100]
+            "layers":[50,50,50]
         }
-        self.epochs = 5
+        self.epochs = 10
