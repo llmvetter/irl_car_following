@@ -93,18 +93,20 @@ class CarFollowingEnv(gym.Env):
         # velocity transition
         next_ego_speed = np.clip(ego_speed + acceleration * self.delta_t, 0, self.max_speed)
 
-        # gap transition
+        # INFERENCE
         if lead_speed:
             relative_speed = lead_speed - ego_speed
             next_distance_gap = distance_to_lead + (relative_speed*self.delta_t) - (0.5*action*self.delta_t**2)
             # relative speed transition
             next_relative_speed = lead_speed - next_ego_speed
 
+        # BACKWARDPASS
         elif determinsitic is True:
             next_distance_gap = distance_to_lead + (relative_speed*self.delta_t) - (0.5*action*self.delta_t**2)
             # relative speed transition
             next_relative_speed = relative_speed - (acceleration*self.delta_t)
-            
+
+        # FORWARDPASS
         else:
             next_distance_gap = distance_to_lead + (relative_speed*self.delta_t) - (0.5*action*self.delta_t**2)
             # relative speed transition
