@@ -11,7 +11,7 @@ class Config:
             "max_speed": 30,
             "max_distance": 100,
             "max_rel_speed": 30,
-            "granularity": 0.1
+            "granularity": 0.2
         }
         self.backward_pass = {
             "epsilon": 0.5,
