@@ -26,6 +26,10 @@ mdp = gym.make(
     dataset_path=config.dataset_path,
     granularity=config.mdp['granularity'],
     actions=config.mdp['actions'],
+    max_speed=config.mdp['max_speed'],
+    max_distance=config.mdp['max_distance'],
+    max_rel_speed=config.mdp['max_rel_speed'],
+    delta_t=config.mdp['delta_t']
     )
 mdp = mdp.unwrapped
 mdp.reset()

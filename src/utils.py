@@ -93,22 +93,27 @@ def value_iteration(
 def rollout(
     mdp: CarFollowingMDP,
     policy: torch.tensor,
-    iterations: int = 100,
-    steps: int = 2000,
+    iterations: int = 50,
+    steps: int = 1000,
 ) -> np.ndarray:
 
     state_visitations = torch.zeros(mdp.n_states)
-    for i in range(50):
-        state = torch.randint(0, mdp.n_states, (1,)).item() # TODO: maybe match trajectories
-        for _ in range(1000):
-            state_visitations[state] += 1
-            action = torch.multinomial(policy[state], 1).item()
+    for i in range(iterations):
+        mdp.reset()
+        state_idx = torch.randint(0, mdp.n_states, (1,)).item() # TODO: maybe match trajectories
+        mdp.state = mdp._index_to_state(state_idx)
+        print(f'Initial state for rollout: {mdp.state}')
+
+        for _ in range(steps):
+            state_visitations[state_idx] += 1
+            action = torch.multinomial(policy[state_idx], 1).item()
             next_state, reward, terminated, truncated, info = mdp.step(
                 action=action,
                 determinsitic=False,
             )
             next_state_index = info['index']
-            state = next_state_index
+            state_idx = next_state_index
+
     # Normalize
     state_visitations /= state_visitations.sum()
 

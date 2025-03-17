@@ -11,7 +11,8 @@ class Config:
             "max_speed": 30,
             "max_distance": 100,
             "max_rel_speed": 30,
-            "granularity": 0.5
+            "granularity": 0.5,
+            "delta_t": 0.3
         }
         self.backward_pass = {
             "epsilon": 0.5,
@@ -20,7 +21,7 @@ class Config:
             "iterations": 80
         }
         self.forward_pass ={
-            "iterations": 100,
+            "iterations": 50,
             "steps": 1000
         }
         self.reward_network = {
