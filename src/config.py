@@ -7,11 +7,11 @@ class Config:
         }
         self.dataset_path = '/home/h6/leve469a/IQ-Learn/data/LF_data-2e5.csv'
         self.mdp = {
-            "actions": [-5, -3, -1.5, -0.8, -0.4, -0.2, 0, 0.2, 0.4, 0.8, 1.5, 3, 5],
+            "actions": [-10, -6, -3, -1.6, -0.8, -0.4, 0, 0.4, 0.8, 1.6, 3, 6, 10],
             "max_speed": 30,
             "max_distance": 100,
             "max_rel_speed": 30,
-            "granularity": 0.2
+            "granularity": 0.5
         }
         self.backward_pass = {
             "epsilon": 0.5,
