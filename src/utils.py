@@ -102,7 +102,6 @@ def rollout(
         mdp.reset()
         state_idx = torch.randint(0, mdp.n_states, (1,)).item() # TODO: maybe match trajectories
         mdp.state = mdp._index_to_state(state_idx)
-        print(f'Initial state for rollout: {mdp.state}')
 
         for _ in range(steps):
             state_visitations[state_idx] += 1
