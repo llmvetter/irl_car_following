@@ -3,6 +3,7 @@ import logging
 import torch
 
 from src.models.mdp import CarFollowingMDP
+from src.models.env import CarFollowingEnv
 from src.models.trajectory import Trajectories
 from src.models.reward import RewardNetwork
 
@@ -10,7 +11,7 @@ logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(
 
 def svf_from_trajectories(
         trajectories: Trajectories,
-        mdp: CarFollowingMDP,
+        mdp: CarFollowingEnv | CarFollowingMDP,
 ) -> np.ndarray:
     svf = np.zeros(mdp.n_states)
     for trajectory in trajectories:
@@ -58,7 +59,7 @@ def backward_pass(
     return policy
 
 def value_iteration(
-        mdp: CarFollowingMDP,
+        mdp: CarFollowingEnv,
         reward: RewardNetwork,
         epsilon: float = 0.1,
         discount: float = 0.95,
@@ -91,7 +92,7 @@ def value_iteration(
     return policy
 
 def rollout(
-    mdp: CarFollowingMDP,
+    mdp: CarFollowingEnv,
     policy: torch.tensor,
     iterations: int = 50,
     steps: int = 1000,

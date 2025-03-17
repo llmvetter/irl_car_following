@@ -71,7 +71,7 @@ class CarFollowingEnv(gym.Env):
         self.state = self._discretize_state(np.array([
             np.random.uniform(5, self.max_speed-5),  # ego speed
             np.random.uniform(5, self.max_distance/2),  # distance to lead vehicle
-            np.random.uniform(-self.max_rel_speed/2, self.max_rel_speed)
+            np.random.uniform(-self.max_rel_speed/2, self.max_rel_speed/2)
         ], dtype=np.float32))
 
         self.index = self.state_to_index[tuple(self.state)]
