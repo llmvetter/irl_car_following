@@ -4,6 +4,7 @@ from typing import Optional, Any
 
 import numpy as np
 import gymnasium as gym
+import pickle as pkl
 
 from src.models.simulator import Simulator
 
@@ -140,6 +141,9 @@ class CarFollowingEnv(gym.Env):
                 self.state = state
                 next_state, reward, terminated, truncated, info = self.step(action_idx)
                 self.T[state_idx, action_idx] = info['index']
+
+    def load_transitions(self, path: str) -> None:
+        self.T = np.load(path)
     
     def _get_obs(self):
         """Return the current observation (state)."""
