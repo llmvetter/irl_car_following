@@ -25,7 +25,7 @@ class Config:
             "steps": 500
         }
         self.reward_network = {
-            "learning_rate":0.001,
+            "learning_rate":0.002,
             "layers":[50,50,50]
         }
         self.epochs = 30

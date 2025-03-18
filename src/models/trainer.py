@@ -74,6 +74,5 @@ class Trainer:
             )
             
             logging.info(f'Epoch loss: {loss}')
-            torch.save(self.reward_function.state_dict(), f'/home/h6/leve469a/results/reward_function_{epoch}.pth')
 
         return self.reward_function, policy
