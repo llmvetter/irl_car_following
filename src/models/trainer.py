@@ -11,6 +11,8 @@ from src.utils import (
 from src.models.trajectory import Trajectories
 from src.models.reward import RewardNetwork 
 from src.models.env import CarFollowingEnv
+from src.models.agent import Agent
+from src.models.evaluator import Evaluator
 from src.models.optimizer import GradientAscentOptimizer
 from src.config import Config
 
@@ -73,7 +75,22 @@ class Trainer:
             loss = self.optimizer.step(
                 torch.tensor(grad, dtype=torch.float32)
             )
-            
+
+            # evaluate current polciy
+            logging.info('Evaluating current policy')
+            agent = Agent(
+                policy=policy,
+                env=self.mdp,
+            )
+            metrics = Evaluator(
+                config=self.config,
+                environment=self.mdp,
+                agent=agent,
+            ).evaluate(
+                num_trajectories=100,
+            )
+
             logging.info(f'Epoch loss: {loss}')
+            logging.info(f'Epoch mettics: {metrics}')
 
         return self.reward_function, policy
