@@ -87,6 +87,12 @@ class Trainer:
                 num_trajectories=100,
             )
 
-            logging.info(f'Epoch loss: {loss}. Epoch score: {metrics['final_score']}')
+            logging.info(
+                f'''
+                Epoch loss: {loss}.
+                Epoch score: {metrics['final_score']}.
+                Epoch crash ratio; {metrics['metrics']['crash_ratio']}
+                '''
+            )
 
         return self.reward_function, policy
