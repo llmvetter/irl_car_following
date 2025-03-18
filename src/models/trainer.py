@@ -37,6 +37,7 @@ class Trainer:
             epochs: int,
     ) -> Tuple[RewardNetwork, torch.tensor]:
 
+        logging.info("Computing transition probability matrix")
         self.mdp.compute_transitions()
 
         expert_svf = svf_from_trajectories(
