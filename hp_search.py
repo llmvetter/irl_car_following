@@ -24,8 +24,7 @@ search_space = {
         'temperature': tune.uniform(0.5, 1.0),
     },
     'reward_network': {
-        'learning_rate': tune.loguniform(1e-4, 1e-2),
-        'layers': tune.choice([[32, 32], [64, 64], [128, 128]]),
+        'learning_rate': tune.loguniform(1e-4, 5e-2),
     },
 }
 
