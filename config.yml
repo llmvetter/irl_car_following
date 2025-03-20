@@ -1,7 +1,7 @@
 data:
   speed_treshold: 2
   exp_path: "C:/Users/lenna/Documents/IRL/IQ-Learn/src/dataset/LF_data-2e5.csv"
-  trans_path: "/home/h6/leve469a/IQ-Learn/data/T.npy"
+  trans_path: "/home/h6/leve469a/car_following/src/T.npy"
 
 env:
   actions: [-5, -3, -1.6, -0.8, -0.4, -0.2, 0, 0.2, 0.4, 0.8, 1.6, 3, 5]

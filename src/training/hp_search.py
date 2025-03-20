@@ -13,7 +13,7 @@ from src.models.env import CarFollowingEnv
 from src.training.objective import objective
 
 # Init config
-config = OmegaConf.load('/home/h6/leve469a/IQ-Learn/config.yaml')
+config = OmegaConf.load('/home/h6/leve469a/car_following/config.yaml')
 config_dict = OmegaConf.to_container(config, resolve=True)
 
 # Hyperparameter search space
