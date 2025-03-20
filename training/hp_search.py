@@ -10,7 +10,7 @@ from omegaconf import OmegaConf
 
 from src.utils import deep_merge
 from src.models.env import CarFollowingEnv
-from src.training.objective import objective
+from training.objective import objective
 
 # Init config
 config = OmegaConf.load('/home/h6/leve469a/car_following/config.yaml')

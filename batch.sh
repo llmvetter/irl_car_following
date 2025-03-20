@@ -15,6 +15,6 @@ ml Python/3.10.4
 
 source /home/h6/leve469a/IQ-Learn/.venv/bin/activate
 
-srun python /home/h6/leve469a/car_following/src/training/hp_search.py $SLURM_ARRAY_TASK_ID
+srun python /home/h6/leve469a/car_following/training/hp_search.py $SLURM_ARRAY_TASK_ID
 
 
