@@ -1,6 +1,6 @@
 data:
   speed_treshold: 2
-  exp_path: "/home/h6/leve469a/IQ-Learn/src/dataset/LF_data-2e5.csv"
+  exp_path: "/home/h6/leve469a/IQ-Learn/data/LF_data-2e5.csv"
   trans_path: "/home/h6/leve469a/car_following/src/T.npy"
 
 env:
