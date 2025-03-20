@@ -3,17 +3,17 @@ import logging
 import pickle
 
 import gymnasium as gym
+from omegaconf import OmegaConf
 
 from src.models.trainer import Trainer
 from src.models.optimizer import GradientAscentOptimizer
 from src.models.reward import RewardNetwork
 from src.models.preprocessor import MilanoPreprocessor
 from src.models.env import CarFollowingEnv
-from src.config import Config
 
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
 
-config = Config()
+config = OmegaConf.load('C:/Users/lenna/Documents/IRL/car_following/config.yml')
 logging.info(f"loaded config with params: {config.__dict__}")
 
 gym.register(
@@ -23,14 +23,14 @@ gym.register(
 
 mdp = gym.make(
     id="CarFollowing",
-    dataset_path=config.dataset_path,
-    granularity=config.mdp['granularity'],
-    actions=config.mdp['actions'],
-    max_speed=config.mdp['max_speed'],
-    max_distance=config.mdp['max_distance'],
-    max_rel_speed=config.mdp['max_rel_speed'],
-    delta_t=config.mdp['delta_t']
-    )
+    dataset_path=config.data.exp_path,
+    granularity=config.env.granularity,
+    actions=config.env.actions,
+    max_speed=config.env.max_speed,
+    max_distance=config.env.max_distance,
+    max_rel_speed=config.env.max_rel_speed,
+    delta_t=config.env.delta_t,
+)
 mdp = mdp.unwrapped
 mdp.reset()
 
@@ -44,17 +44,20 @@ mdp.compute_transitions()
 logging.info("Init Reward Function")
 reward_function = RewardNetwork(
     mdp=mdp,
-    layers=config.reward_network['layers'])
+    layers=config.reward_network.layers)
 
 logging.info("Init Optimizer")
 optimizer = GradientAscentOptimizer(
     mdp=mdp,
     reward_network=reward_function,
-    lr=config.reward_network['learning_rate'],
+    lr=config.reward_network.learning_rate,
 )
 
 logging.info("Loading Trajectories")
-expert_trajectories = MilanoPreprocessor(mdp=mdp).load(path=config.dataset_path)
+expert_trajectories = MilanoPreprocessor(
+    mdp=mdp,
+    config=config,
+).load(path=config.data.exp_path)
 
 logging.info("Init Trainer")
 trainer = Trainer(

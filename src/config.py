@@ -1,31 +1,20 @@
-class Config:
-    def __init__(
-            self,
-    ) -> None:
-        self.preprocessor = {
-            "speed_treshold":2
-        }
-        self.dataset_path = '/home/h6/leve469a/IQ-Learn/data/LF_data-2e5.csv'
-        self.mdp = {
-            "actions": [-5, -3, -1.6, -0.8, -0.4, -0.2, 0, 0.2, 0.4, 0.8, 1.6, 3, 5],
-            "max_speed": 30,
-            "max_distance": 100,
-            "max_rel_speed": 30,
-            "granularity": 0.5,
-            "delta_t": 0.3
-        }
-        self.backward_pass = {
-            "epsilon": 0.5,
-            "discount": 0.98,
-            "temperature": 0.7,
-            "iterations": 80
-        }
-        self.forward_pass ={
-            "iterations": 100,
-            "steps": 500
-        }
-        self.reward_network = {
-            "learning_rate":0.002,
-            "layers":[50,50,50]
-        }
-        self.epochs = 5
+class DotDict(dict):
+
+    def __getattr__(self, name):
+
+        try:
+            value = self[name]
+
+            if isinstance(value, dict):
+                value = DotDict(value)
+                self[name] = value
+            return value
+
+        except KeyError:
+            raise AttributeError(f"'dotdict' object has no attribute '{name}'")
+    
+    def __setattr__(self, name, value):
+        self[name] = value
+
+    def __delattr__(self, name):
+        del self[name]

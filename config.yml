@@ -1,0 +1,28 @@
+data:
+  speed_treshold: 2
+  exp_path: "C:/Users/lenna/Documents/IRL/IQ-Learn/src/dataset/LF_data-2e5.csv"
+  trans_path: "/home/h6/leve469a/IQ-Learn/data/T.npy"
+
+env:
+  actions: [-5, -3, -1.6, -0.8, -0.4, -0.2, 0, 0.2, 0.4, 0.8, 1.6, 3, 5]
+  max_speed: 30
+  max_distance: 100
+  max_rel_speed: 30
+  granularity: 10
+  delta_t: 0.3
+
+backward_pass:
+  epsilon: 0.5
+  discount: 0.98
+  temperature: 0.7
+  iterations: 80
+
+forward_pass:
+  iterations: 100
+  steps: 500
+
+reward_network:
+  learning_rate: 0.002
+  layers: [50, 50, 50]
+
+epochs: 5

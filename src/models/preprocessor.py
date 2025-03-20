@@ -1,19 +1,18 @@
 import pandas as pd
-import numpy as np
+from omegaconf import OmegaConf
 
 from src.models.trajectory import Trajectory, Trajectories
 from src.models.mdp import CarFollowingMDP
-from src.config import Config
 
-config = Config()
 
 class Preprocessor():
     def __init__(
             self,
             mdp: CarFollowingMDP,
+            config: OmegaConf,
     ):
         self.mdp = mdp
-        self.min_speed = config.preprocessor['speed_treshold']
+        self.min_speed = config.data.speed_treshold
 
     def create_filtered_trajectory(
             self,
@@ -63,10 +62,14 @@ class Preprocessor():
 
 
 class MilanoPreprocessor:
-    def __init__(self, mdp: CarFollowingMDP):
+    def __init__(
+            self,
+            mdp: CarFollowingMDP,
+            config: OmegaConf,
+    ) -> None:
         self.kmh_to_ms = 0.27778
         self.mdp = mdp
-        self.min_speed = config.preprocessor['speed_treshold']
+        self.min_speed = config.data.speed_treshold
 
     def _filter_leader_follower_pairs(self, df: pd.DataFrame, min_entries: int = 800) -> pd.DataFrame:
         """

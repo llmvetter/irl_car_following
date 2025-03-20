@@ -1,23 +1,23 @@
 import torch
 import logging
 import pickle
+from omegaconf import OmegaConf
 
 from src.utils import backward_pass
 from src.models.reward import RewardNetwork
 from src.models.mdp import CarFollowingMDP
-from src.config import Config
 
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
 
-config = Config()
+config = OmegaConf.load('/home/h6/leve469a/car_following/config.yaml')
 logging.info(f"loaded config with params: {config.__dict__}")
 
 mdp = CarFollowingMDP(
-    a_min= config.mdp['a_min'],
-    a_max= config.mdp['a_max'],
-    a_steps=config.mdp['a_steps'],
-    v_steps=config.mdp['v_steps'],
-    g_steps=config.mdp['g_steps'],
+    a_min= config.env.a_min,
+    a_max= config.env.a_max,
+    a_steps=config.env.a_steps,
+    v_steps=config.env.v_steps,
+    g_steps=config.env.g_steps,
 )
 logging.info("Mdp initialized: "
              f"n_states = {mdp.n_states},"
@@ -35,10 +35,10 @@ logging.info("Extracting policy...")
 policy = backward_pass(
     mdp=mdp,
     reward=reward_function,
-    temperature=config.backward_pass['temperature'],
-    discount=config.backward_pass['discount'],
-    epsilon=config.backward_pass['epsilon'],
-    max_iterations=config.backward_pass['iterations'],
+    temperature=config.backward_pass.temperature,
+    discount=config.backward_pass.discount,
+    epsilon=config.backward_pass.epsilon,
+    max_iterations=config.backward_pass.iterations,
 )
 
 with open('/home/h6/leve469a/results/policy.pkl', 'wb') as file:

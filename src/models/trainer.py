@@ -2,6 +2,7 @@ import numpy as np
 from typing import Tuple
 import logging
 import torch
+from omegaconf import OmegaConf
 
 from src.utils import (
     rollout,
@@ -14,7 +15,7 @@ from src.models.env import CarFollowingEnv
 from src.models.agent import Agent
 from src.models.evaluator import Evaluator
 from src.models.optimizer import GradientAscentOptimizer
-from src.config import Config
+from src.config import DotDict
 
 
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
@@ -22,7 +23,7 @@ logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(
 class Trainer:
     def __init__(
             self,
-            config: Config,
+            config: DotDict | OmegaConf,
             trajectories: Trajectories,
             optimizer: GradientAscentOptimizer,
             reward_function: RewardNetwork,
@@ -50,17 +51,17 @@ class Trainer:
             policy: torch.tensor = value_iteration(
                 mdp=self.mdp,
                 reward=self.reward_function,
-                epsilon=self.config.backward_pass['epsilon'],
-                discount=self.config.backward_pass['discount'],
-                temperature=self.config.backward_pass['temperature'],
-                max_iterations=self.config.backward_pass['iterations'],
+                epsilon=self.config.backward_pass.epsilon,
+                discount=self.config.backward_pass.discount,
+                temperature=self.config.backward_pass.temperature,
+                max_iterations=self.config.backward_pass.iterations,
             )
             logging.info("Entering Forward Pass")
             expected_svf: np.ndarray = rollout(
                 mdp=self.mdp,
                 policy=policy,
-                steps=self.config.forward_pass['steps'],
-                iterations=self.config.forward_pass['iterations'],
+                steps=self.config.forward_pass.steps,
+                iterations=self.config.forward_pass.iterations,
             )
             #calculate feature expectation from svf
             grad = expert_svf - expected_svf
@@ -80,7 +81,6 @@ class Trainer:
                 env=self.mdp,
             )
             metrics = Evaluator(
-                config=self.config,
                 environment=self.mdp,
                 agent=agent,
             ).evaluate(

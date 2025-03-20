@@ -1,3 +1,4 @@
+from typing import Any
 import numpy as np
 import logging
 import torch
@@ -8,6 +9,23 @@ from src.models.trajectory import Trajectories
 from src.models.reward import RewardNetwork
 
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
+
+def deep_merge(
+        d1: dict[str, Any],
+        d2: dict[str, Any],
+) -> dict[str, Any]:
+
+    merged = dict(d1)
+    for key, value in d2.items():
+        if (
+            key in merged
+            and isinstance(merged[key], dict)
+            and isinstance(value, dict)
+        ):
+            merged[key] = deep_merge(merged[key], value)
+        else:
+            merged[key] = value
+    return merged
 
 def svf_from_trajectories(
         trajectories: Trajectories,

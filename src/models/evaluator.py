@@ -4,16 +4,14 @@ from scipy.ndimage import gaussian_filter1d
 
 from src.models.env import CarFollowingEnv
 from src.models.agent import Agent
-from src.config import Config
+
 
 class Evaluator():
     def __init__(
             self,
-            config: Config,
             environment: CarFollowingEnv,
             agent: Agent,
     ) -> None:
-        self.config = config
         self.env = environment
         self.agent = agent
 
