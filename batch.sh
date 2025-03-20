@@ -4,7 +4,7 @@
 #SBATCH --cpus-per-task=16
 #SBATCH --mem-per-cpu=9000
 #SBATCH --nodes=1
-#SBATCH --time=02:00:00
+#SBATCH --time=24:00:00
 #SBATCH --error="/home/leve469a/maxent_batch-%A_%a.out"
 #SBATCH --output="/home/leve469a/maxent_batch-%A_%a.out"
 #SBATCH --array=1-4
