@@ -59,7 +59,7 @@ class CarFollowingEnv(gym.Env):
         self.index = None
 
         # Init transition matrix
-        self.T = np.zeros((self.n_states, self.n_actions), dtype=int)
+        self.T = np.zeros((self.n_states, self.n_actions), dtype=np.int32)
 
     def reset(
             self,

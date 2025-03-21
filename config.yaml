@@ -8,7 +8,7 @@ env:
   max_speed: 30
   max_distance: 100
   max_rel_speed: 30
-  granularity: 0.25
+  granularity: 10
   delta_t: 0.3
 
 backward_pass:

@@ -85,9 +85,12 @@ def value_iteration(
         max_iterations: int = 50,
 ) -> torch.tensor:
 
-    V = np.zeros(mdp.n_states)
-    Q = np.zeros((mdp.n_states, mdp.n_actions))
-    R = reward.forward(torch.from_numpy(mdp.state_grid).float(), grad=False).numpy()
+    V = np.zeros(mdp.n_states, dtype=np.float32)
+    Q = np.zeros((mdp.n_states, mdp.n_actions), dtype=np.float32)
+    R = reward.forward(
+        torch.from_numpy(mdp.state_grid).float(),
+        grad=False,
+    ).numpy().astype(dtype=np.float32)
 
     for iteration in range(max_iterations):
         # Compute Q-values: Q[s, a] = reward[s, a] + γ * V[next_state]
