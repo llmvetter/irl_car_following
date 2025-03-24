@@ -12,9 +12,9 @@ env:
   delta_t: 0.3
 
 backward_pass:
-  epsilon: 0.5
-  discount: 0.98
-  temperature: 0.7
+  epsilon: 0.192146
+  discount: 0.956274
+  temperature: 0.605729
   iterations: 80
 
 forward_pass:
@@ -22,7 +22,7 @@ forward_pass:
   steps: 500
 
 reward_network:
-  learning_rate: 0.002
+  learning_rate: 0.000794472
   layers: [50, 50, 50]
 
 epochs: 10
