@@ -13,7 +13,7 @@ from src.models.env import CarFollowingEnv
 
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
 
-config = OmegaConf.load('C:/Users/lenna/Documents/IRL/car_following/config.yml')
+config = OmegaConf.load('/home/h6/leve469a/car_following/config.yaml')
 logging.info(f"loaded config with params: {config.__dict__}")
 
 gym.register(
