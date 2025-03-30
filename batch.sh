@@ -7,7 +7,7 @@
 #SBATCH --time=24:00:00
 #SBATCH --error="/home/leve469a/maxent_batch-%A_%a.out"
 #SBATCH --output="/home/leve469a/maxent_batch-%A_%a.out"
-#SBATCH --array=1-10
+#SBATCH --array=1-4
 
 ml purge
 ml release/24.04 GCCcore/11.3.0

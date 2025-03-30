@@ -71,6 +71,7 @@ tuner = tune.Tuner(
         mode="max",
         num_samples=100,
         trial_dirname_creator=create_name,
+        max_concurrent_trials=20,
     ),
 )
 
