@@ -108,9 +108,7 @@ class Evaluator():
             plt.show()
         
         return follower_trajectory, crash
-    
 
-    import numpy as np
 
     def evaluate(
         self,
