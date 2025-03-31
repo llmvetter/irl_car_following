@@ -1,16 +1,12 @@
 import torch
 import torch.nn as nn
 
-from src.models.mdp import CarFollowingMDP
-
 class RewardNetwork(nn.Module):
     def __init__(
             self,
-            mdp: CarFollowingMDP,
             layers: list,
     ):
         super(RewardNetwork, self).__init__()
-        self.mdp = mdp
         self.net = nn.Sequential(
             nn.Linear(3, layers[0]),
             nn.ReLU(),
