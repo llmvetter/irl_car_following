@@ -46,7 +46,6 @@ mdp.load_transitions(config.data.trans_path)
 
 logging.info("Init Reward Function")
 reward_function = RewardNetwork(
-    mdp=mdp,
     layers=config.reward_network.layers)
 
 logging.info("Init Optimizer")

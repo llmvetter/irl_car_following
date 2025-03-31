@@ -46,7 +46,6 @@ def objective(config: dict[str, Any]):
 
     logging.info("Init Reward Function")
     reward_function = RewardNetwork(
-        mdp=env,
         layers=config.reward_network.layers)
 
     logging.info("Init Optimizer")
