@@ -56,7 +56,7 @@ def objective(config: dict[str, Any]):
     )
 
     logging.info("Loading Trajectories")
-    expert_trajectories, _ = MilanoPreprocessor(
+    expert_trajectories = MilanoPreprocessor(
         mdp=env,
         config=config,
     ).load(path=config.data.exp_path)

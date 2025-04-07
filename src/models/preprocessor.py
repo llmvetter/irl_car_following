@@ -1,6 +1,5 @@
 import pandas as pd
 from omegaconf import OmegaConf
-from sklearn.model_selection import train_test_split
 
 from src.models.trajectory import Trajectory, Trajectories
 from src.models.env import CarFollowingEnv
@@ -15,9 +14,8 @@ class MilanoPreprocessor:
         self.kmh_to_ms = 0.27778
         self.mdp = mdp
         self.min_speed = config.data.speed_treshold
-        self.random_state = config.data.random_state
 
-    def _filter_leader_follower_pairs(self, df: pd.DataFrame, min_entries: int = 330) -> pd.DataFrame:
+    def _filter_leader_follower_pairs(self, df: pd.DataFrame, min_entries: int = 800) -> pd.DataFrame:
         """
         Filters leader-follower pairs that have at least `min_entries` data points.
         """
@@ -55,8 +53,8 @@ class MilanoPreprocessor:
         """
         Loads and processes the dataset to extract leader-follower trajectories.
         """
-        df_init = pd.read_csv(path)
-        df = df_init.iloc[::3].reset_index(drop=True)  # downsample to 10hz
+        df = pd.read_csv(path)
+        # df = df_init.iloc[::3].reset_index(drop=True)  # downsample to 10hz
         df["Follower Speed"] *= self.kmh_to_ms
         df["Relative speed"] *= self.kmh_to_ms
 
@@ -75,29 +73,12 @@ class MilanoPreprocessor:
         df_filtered = self._filter_leader_follower_pairs(df_reduced)
         unique_pairs = df_filtered[['Leader', 'Follower']].drop_duplicates()
 
-        train_pairs, test_pairs = train_test_split(
-            unique_pairs,
-            test_size=0.2,
-            random_state=self.random_state,
-        )
-
-        train_df = df_filtered.merge(train_pairs, on=['Leader', 'Follower'])
-        test_df = df_filtered.merge(test_pairs, on=['Leader', 'Follower'])
-
         # Generate train trajectories
         train_trajectories = []
         for _, row in unique_pairs.iterrows():
             leader, follower = row["Leader"], row["Follower"]
-            traj = self.create_filtered_trajectory(train_df, leader, follower)
+            traj = self.create_filtered_trajectory(df_filtered, leader, follower)
             if len(traj) > 0:  # Ensure trajectory is not empty
                 train_trajectories.append(traj)
         
-        # Generate test trajectories
-        test_trajectories = []
-        for _, row in unique_pairs.iterrows():
-            leader, follower = row["Leader"], row["Follower"]
-            traj = self.create_filtered_trajectory(test_df, leader, follower)
-            if len(traj) > 0:  # Ensure trajectory is not empty
-                test_trajectories.append(traj)
-
-        return Trajectories(train_trajectories), Trajectories(test_trajectories)
+        return Trajectories(train_trajectories)

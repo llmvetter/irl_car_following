@@ -1,7 +1,7 @@
 data:
   speed_treshold: 2
   random_state: 42
-  exp_path: "/home/h6/leve469a/IQ-Learn/data/LF_data-2e5.csv"
+  exp_path: "/home/h6/leve469a/IQ-Learn/data/train.csv"
   trans_path: "/home/h6/leve469a/car_following/src/T.npy"
 
 env:
