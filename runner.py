@@ -56,7 +56,7 @@ optimizer = GradientAscentOptimizer(
 )
 
 logging.info("Loading Trajectories")
-expert_trajectories, _ = MilanoPreprocessor(
+expert_trajectories = MilanoPreprocessor(
     mdp=mdp,
     config=config,
 ).load(path=config.data.exp_path)
