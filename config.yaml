@@ -10,7 +10,7 @@ env:
   max_distance: 100
   max_rel_speed: 30
   granularity: 0.25
-  delta_t: 0.1
+  delta_t: 0.3
 
 backward_pass:
   epsilon: 0.125
