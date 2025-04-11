@@ -26,4 +26,4 @@ reward_network:
   learning_rate: 0.000980817
   layers: [50, 50, 50]
 
-epochs: 10
+epochs: 8
