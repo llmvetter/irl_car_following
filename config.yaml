@@ -2,13 +2,13 @@ data:
   speed_treshold: 2
   random_state: 42
   exp_path: "/home/h6/leve469a/data/TrajData_Milano/train1/train.csv"
-  trans_path: "/home/h6/leve469a/car_following/src/T.npy"
+  trans_path: "/home/h6/leve469a/car_following/src/T1.npy"
 
 env:
   actions: [-5, -3, -1.6, -0.8, -0.4, -0.2, 0, 0.2, 0.4, 0.8, 1.6, 3, 5]
-  max_speed: 30
-  max_distance: 100
-  max_rel_speed: 30
+  max_speed: 35
+  max_distance: 140
+  max_rel_speed: 15
   granularity: 0.25
   delta_t: 0.3
 
