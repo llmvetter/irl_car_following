@@ -38,8 +38,8 @@ logging.info("Mdp initialized: "
              f"n_states = {mdp.n_states},"
              f"n_action = {mdp.n_actions}.")
 
-# logging.info("Computing transition probability matrix")
-# mdp.compute_transitions()
+logging.info("Computing transition probability matrix")
+mdp.compute_transitions()
 
 logging.info("Loading transition probability matrix")
 mdp.load_transitions(config.data.trans_path)
