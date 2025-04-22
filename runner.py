@@ -1,6 +1,7 @@
 import torch
 import logging
 import pickle
+import numpy as np
 
 import gymnasium as gym
 from omegaconf import OmegaConf
@@ -40,6 +41,7 @@ logging.info("Mdp initialized: "
 
 logging.info("Computing transition probability matrix")
 mdp.compute_transitions()
+np.save(config.data.trans_path, mdp.T)
 
 logging.info("Loading transition probability matrix")
 mdp.load_transitions(config.data.trans_path)
