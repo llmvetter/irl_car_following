@@ -51,10 +51,10 @@ env = gym.make(
 env = env.unwrapped
 env.reset()
 
-logging.info(
-    f"Computing transition probability matrix with n_states: {env.n_states}")
-env.compute_transitions()
-np.save(config.data.trans_path, env.T)
+# logging.info(
+#     f"Computing transition probability matrix with n_states: {env.n_states}")
+# env.compute_transitions()
+# np.save(config.data.trans_path, env.T)
 
 logging.info("Loading transition probability matrix")
 env.load_transitions(config.data.trans_path)
