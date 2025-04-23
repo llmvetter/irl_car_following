@@ -194,7 +194,7 @@ class Evaluator():
         else:
             metrics = {"crash_ratio": 1.0}
             normalized_metrics = {"crash_ratio": 1.0}
-            final_score = 0.0  # Worst case
+            final_score = 1 # Worst case
 
         return {
             "metrics": metrics,
