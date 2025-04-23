@@ -1,7 +1,7 @@
 data:
   speed_treshold: 2
   random_state: 42
-  exp_path: "/home/h6/leve469a/data/TrajData_Milano/train1/train.csv"
+  exp_path: "/home/h6/leve469a/data/TrajData_Milano/train2/train.csv"
   trans_path: "/home/h6/leve469a/car_following/src/T1.npy"
 
 env:
