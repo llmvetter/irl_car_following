@@ -6,8 +6,8 @@
 #SBATCH --nodes=1
 #SBATCH --time=48:00:00
 #SBATCH -J jobname
-#SBATCH --error="/home/leve469a/maxent-%J.out"
-#SBATCH --output="/home/leve469a/maxent-%J.out"
+#SBATCH --error="/home/leve469a/maxent_train1-%J.out"
+#SBATCH --output="/home/leve469a/maxent_train1-%J.out"
 
 ml purge
 ml release/24.04 GCCcore/11.3.0
