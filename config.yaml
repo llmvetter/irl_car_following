@@ -1,7 +1,7 @@
 data:
   speed_treshold: 2
   random_state: 42
-  exp_path: "/home/h6/leve469a/data/TrajData_Milano/train2/train.csv"
+  exp_path: "/home/h6/leve469a/data/TrajData_Milano/train3/train.csv"
   trans_path: "/home/h6/leve469a/car_following/src/T1.npy"
 
 env:
@@ -13,9 +13,9 @@ env:
   delta_t: 0.3
 
 backward_pass:
-  epsilon: 0.358481
-  discount: 0.971698
-  temperature: 0.641392
+  epsilon: 0.316984
+  discount: 0.969773
+  temperature: 0.703928
   iterations: 80
 
 forward_pass:
@@ -23,7 +23,7 @@ forward_pass:
   steps: 500
 
 reward_network:
-  learning_rate: 0.00126946
+  learning_rate: 0.030954
   layers: [50, 50, 50]
 
 epochs: 10

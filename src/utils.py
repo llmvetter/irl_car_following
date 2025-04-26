@@ -1,7 +1,9 @@
 from typing import Any
+from tqdm import tqdm
 import numpy as np
 import logging
 import torch
+import matplotlib.pyplot as plt
 
 from src.models.env import CarFollowingEnv
 from src.models.trajectory import Trajectories
@@ -101,3 +103,42 @@ def rollout(
     state_visitations /= state_visitations.sum()
 
     return state_visitations.detach().numpy()
+
+def reward_heatmap(
+        reward_model: RewardNetwork,
+        env: CarFollowingEnv,
+        grid_granularity: float=0.5,
+        relative_speed: float=1.0,
+) -> None:
+
+    v_space = np.arange(0, env.max_speed, grid_granularity)
+    g_space = np.arange(0, env.max_distance, grid_granularity)
+    rel_space = relative_speed
+
+    V, G = np.meshgrid(v_space, g_space, indexing='ij')
+    state_space = np.stack(
+        [V.ravel(), G.ravel(), np.full(V.size, rel_space)],
+        axis=1,
+    )
+    state_space_tensor = torch.tensor(
+        state_space,
+        dtype=torch.float32,
+    )
+    state_rewards = reward_model.forward(
+        state_space_tensor,
+        grad=False,
+    ).detach().cpu().numpy()
+
+    _, ax = plt.subplots(figsize=(10, 8))
+    scatter = ax.scatter(
+        state_space[:, 1],
+        state_space[:, 0],
+        c=state_rewards,
+        cmap='viridis',
+    )
+
+    plt.colorbar(scatter, label='Reward')
+    ax.set_xlabel('Distance Gap g in m')
+    ax.set_ylabel('Velocity v in m/s')
+    ax.set_title('Reward heatmap over state space')
+    plt.show()
