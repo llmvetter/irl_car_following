@@ -44,6 +44,7 @@ class Evaluator():
             leader_trajectory = self.sample_trajectory()
 
         follower_trajectory = []
+        follower_actions = []
         v_rel_init = leader_trajectory[0]-v_ego_init
         ego_vehicle_state = np.array([
             v_ego_init,
@@ -61,50 +62,66 @@ class Evaluator():
             if terminated:
                 break
             follower_trajectory.append(next_state)
+            follower_actions.append(action)
             ego_vehicle_state = next_state
 
         if terminated:
             missing_steps = len(leader_trajectory) - len(follower_trajectory)
             dummy_variable = np.zeros_like(ego_vehicle_state)
+            dummy_action = np.zeros_like(action)
             follower_trajectory.extend([dummy_variable] * missing_steps)
+            follower_actions.extend([dummy_action]*missing_steps)
             crash = True
 
         else:
             dummy_variable = follower_trajectory[-1]
+            dummy_action = follower_actions[-1]
+            follower_actions.append(dummy_action)
             follower_trajectory.append(dummy_variable)
 
         follower_velocity = np.array([item[0] for item in follower_trajectory])
         distance_gap = np.array([item[1] for item in follower_trajectory])
         relative_speed = np.array([item[2] for item in follower_trajectory])
+        actions = np.array([
+            self.env.action_mapping.get(int(action), 0) 
+            for action in follower_actions
+        ])
         time_steps = range(len(leader_trajectory))
         
         if visualize:
             plt.figure(figsize=(10, 6))
-            plt.plot(time_steps, follower_velocity, label='follower velocity', marker='o', markersize=5)
-            plt.plot(time_steps, leader_trajectory, label='leader velocity', marker='o', markersize=5)
+            plt.plot(time_steps, follower_velocity, label='Follower Velocity', marker='o', markersize=5)
+            plt.plot(time_steps, leader_trajectory, label='Leader Velocity', marker='o', markersize=5)
             plt.xlabel('Time Steps in 0.1s')
             plt.ylabel('Velocity in m/s')
-            plt.title('Velocity over time')
+            plt.title('Velocity over Time')
             plt.legend()
             plt.grid(True)
 
             plt.figure(figsize=(10, 6))
-            plt.plot(time_steps, distance_gap, label='distance gap', marker='o', markersize=5)
-            plt.xlabel('Time steps in 0.1s')
+            plt.plot(time_steps, distance_gap, label='Distance Gap', marker='o', markersize=5)
+            plt.xlabel('Time Steps in 0.1s')
             plt.ylabel('Distance gap in m')
-            plt.title('Distance gap to lead vehicle')
+            plt.title(f'Distance Gap to Lead Vehicle')
             plt.legend()
             plt.grid(True)
 
             plt.figure(figsize=(10, 6))
-            plt.plot(time_steps, relative_speed, label='distance gap/velocity', marker='o', markersize=5)
+            plt.plot(time_steps, relative_speed, label='Relative Velocity', marker='o', markersize=5)
             plt.xlabel('Time steps in 0.1s')
             plt.ylabel('relative velocity in m/s')
             plt.title('Relative velocity (v_lead - v_ego)')
             plt.legend()
             plt.grid(True)
 
-            # Show the plot
+            plt.figure(figsize=(10, 6))
+            plt.plot(time_steps, actions, label='actions', marker='o', markersize=5, linestyle='')
+            plt.xlabel('Time steps in 0.1s')
+            plt.ylabel('Acceleration in m/s²')
+            plt.title('Acceleration of lead vehicle')
+            plt.legend()
+            plt.grid(True)
+
             plt.show()
         
         return follower_trajectory, crash

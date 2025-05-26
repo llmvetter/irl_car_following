@@ -138,7 +138,7 @@ def reward_heatmap(
     )
 
     plt.colorbar(scatter, label='Reward')
-    ax.set_xlabel('Distance Gap g in m')
+    ax.set_xlabel('Distance Gap g (m)')
     ax.set_ylabel('Velocity v in m/s')
-    ax.set_title('Reward heatmap over state space')
+    ax.set_title('Reward heatmap over State Space')
     plt.show()
