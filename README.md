@@ -1,2 +1,2 @@
-## Abstract
-This study applies the Maximum Entropy Deep Inverse Reinforcement Learning (MEDIRL) framework to autonomous driving, focusing on the car-following scenario. The primary objective is to extract the driver's reward function from a dataset of expert demonstrations. We leverage deep neural networks to approximate the reward function, capitalizing on their ability to represent complex, nonlinear interdependencies of state features.
+## Inverse Reinforcement Learning for Autonomous Driving
+This study applies Maximum Entropy Deep Inverse Reinforcement Learning (MEDIRL) to autonomous driving, focusing on the car-following scenario. The primary objective is to extract the driver's reward function from a dataset of expert demonstrations. A deep neural network is trained on the observed expert trajectories to approximate the expert's reward function, capitalizing on their ability to represent complex, nonlinear interdependencies of state features.
